@@ -1,43 +1,43 @@
 <?php
-/**
- * 日志
- * @copyright reginx.com
- * $Id: log.class.php 5 2017-07-19 03:44:30Z reginx $
- */
 namespace re\rgx;
-
+/**
+ * 日志操作抽象类
+ * @author reginx
+ */
 abstract class log {
 
     /**
      * 配置信息
-     * @var null
+     * @var array
      */
     protected $config = null;
     
     /**
-     * 写日志
-     * @param unknown $mod
-     * @param unknown $content
-     * @param string $trace
+     * 写入日志
+     * @param mixed   $content
+     * @param boolean $trace
+     * @param mixed   $trace_stack
      */
     abstract protected function write ($content, $trace = false, $trace_stack = null);
-    
+
     /**
      * 持久化
-     * @param unknown $mod
+     * @param string $mod
      */
     abstract protected function flush ($mod = null);
-    
+
     /**
      * 初始化
-     * @param unknown $mod
+     * @param string $mod
      */
     abstract protected function init ($mod);
-    
+
     /**
-     * 获取日志操作对象
-     *
-     * @return unknown
+     * 获取日志操作实例
+     * @param array $config
+     * @param mixed $callback
+     * @throws exception
+     * @return \re\rgx\log
      */
     public static function get_instance ($config, $callback = null) {
         static $logobj = null;
@@ -58,4 +58,4 @@ abstract class log {
         }
         return $logobj;
     }
-}// end class
+}

@@ -2,12 +2,13 @@
 namespace re\rgx;
 /**
  * 配置管理类
+ * @author reginx
  */
 class config extends rgx {
     
     /**
-     * app config
-     * @var unknown
+     * app配置
+     * @var array
      */
     private $app = [
         'lang'      => 'zh_cn',
@@ -15,8 +16,8 @@ class config extends rgx {
     ];
 
     /**
-     * template parse config
-     * @var unknown
+     * 模板配置
+     * @var array
      */
     private $tpl = [
         'style'     => 'default',
@@ -32,8 +33,8 @@ class config extends rgx {
     ];
     
     /**
-     * cache config
-     * @var unknown
+     * 缓存配置
+     * @var array
      */
     private $cache  = [
         'type'      => 'file',
@@ -42,8 +43,8 @@ class config extends rgx {
     ];
 
     /**
-     * route config
-     * @var unknown
+     * 路由配置
+     * @var array
      */
     private $route  = [
         'def_mod'   => 'index',     // 默认 module
@@ -58,8 +59,8 @@ class config extends rgx {
     ];
 
     /**
-     * log config
-     * @var unknown
+     * 日志配置
+     * @var array
      */
     private $log  = [
         'type'      => 'file',
@@ -69,33 +70,33 @@ class config extends rgx {
     ];
 
     /**
-     * database config
-     * @var unknown
+     * 数据库配置
+     * @var array
+     * @example host=127.0.0.1;port=3306;db=rgx;user=root;passwd=;charset=utf8;profile=true
      */
     private $db  = [
         'pre'       => 'pre_',
         'type'      => 'mysql',
         'mysql'     => [
-            'default'   => 'host=127.0.0.1;port=3306;db=rgx;user=root;passwd=;charset=utf8;profile=true',
-            // 'read'      => ['...', '...'],
-            // 'write'     => ['', ''],
+            'default'   => ''
         ],
     ];
     
     /**
-     * session config
-     * @var unknown
+     * 会话配置
+     * @var array
      */
     private $sess = [
         'type'      => 'php',
-        'php'       => array(
+        'php'       => [
             'ttl'   => 600
-        )
+        ]
     ];
     
     /**
-     * construct
+     * 架构方法
      * @param array $opts
+     * @return \re\rgx\config
      */
     protected function __construct ($opts = []) {
         foreach ((array)$opts as $k => $v) {
@@ -110,8 +111,9 @@ class config extends rgx {
     }
     
     /**
-     * get instance
+     * 获取实例
      * @param array $opts
+     * @return \re\rgx\config
      */
     public static function get_instance ($opts = []) {
         static $instance = null;
@@ -122,23 +124,13 @@ class config extends rgx {
     }
     
     /**
-     * get time
-     */
-    public  function request_time () {
-        return defined('IS_CLI') && IS_CLI ? time() : REQUEST_TIME;
-    }
-    
-    /**
-     * get item
-     * @param string $key
-     *
-     * @example
-     *      get('abc.efg.0')
-     *      get('lang')
+     * 获取配置项值
+     * @param unknown $key
+     * @return mixed
      */
     public function get ($key) {
-        $paths = explode('.', $key);
         $ref = $this;
+        $paths = explode('.', $key);
         while (!empty($paths)) {
             $k = array_shift($paths);
             if (is_object($ref)) {
@@ -158,11 +150,11 @@ class config extends rgx {
     }
 
     /**
-     * 设置
-     * @param string $key
-     * @param mixed $lang
-     * @param bool  $sync
-     *
+     * 写入配置值
+     * @param unknown $key
+     * @param unknown $value
+     * @param string $sync
+     * 
      * @example
      *      set('abc.efg.0', ['foo' => 1])
      *      set('lang', 'zh_cn')
@@ -190,7 +182,7 @@ class config extends rgx {
     }
     
     /**
-     * sync config to file
+     * 同步配置信息
      * @param string $source
      */
     public function sync ($source = true) {

@@ -1,51 +1,53 @@
 <?php
 namespace re\rgx;
 /**
- * 核心模块类
- * @copyright reginx.com
- * $Id: module.class.php 5 2017-07-19 03:44:30Z reginx $
+ * 应用模块类
+ * @author reginx
  */
 class module extends rgx {
-    
+
     /**
-     * 会话操作对象
-     *
-     * @var unknown_type
+     * 会话操作实例
+     * @var \re\rgx\sess
      */
     public $_sess = null;
-    
+
     /**
-     * 模板操作对象
-     *
-     * @var unknown_type
+     * 模板操作实例
+     * @var \re\rgx\template
      */
     protected $_tpl = null;
 
     /**
      * 是否输出性能报告
-     * @var unknown
+     * @var boolean
      */
     public $show_profile = false;
-    
+
     /**
-     * 架构函数
-     *
-     * @param unknown_type $param
+     * 是否为 ajax 请求
+     * @var boolean
      */
-    public function __construct($param = array()) {
+    public $is_ajax = false;
+
+    /**
+     * 架构方法
+     * @param array $param
+     */
+    public function __construct($param = []) {
         $this->_tpl = app::tpl();
         plugin::notify('MOD_INIT');
         // 设置默认 模板风格目录
         $this->_tpl->style($this->_config['template']);
         $this->assign('_MODULE', router::get_mod(false));
         $this->assign('_ACTION', router::get_act(false));
+        $this->is_ajax = $this->has('isajax', '*');
     }
 
     /**
      * 默认调用
-     * @param  [type] $method [description]
-     * @param  array  $agrv   [description]
-     * @return [type]         [description]
+     * @param unknown $method
+     * @param array $args
      */
     public function __call ($method, $args = []) {
         if (!method_exists($this, 'defaults')) {
@@ -53,46 +55,48 @@ class module extends rgx {
         }
         $this->defaults($method, $args);
     }
-    
+
     /**
      * 会话开启
-     *
+     * @param mixed $sess_name
+     * @param mixed $sess_id
+     * @param array $opts
      */
     public function sess ($sess_name = null, $sess_id = null, $opts = []) {
        $this->_sess = app::sess($sess_name, $sess_id);
     }
 
     /**
-     * 获取session内容
-     * @param  [type] $key [description]
-     * @return [type]      [description]
+     * 获取会话变量
+     * @param string $key
+     * @return mixed
      */
     public function sess_get ($key) {
         return $this->_sess->get($key);
     }
 
     /**
-     * 设置 session 变量
-     * @param  [type] $key [description]
-     * @param  [type] $val [description]
-     * @return [type]      [description]
+     * 设置会话变量
+     * @param string $key
+     * @param mixed $val
+     * @return boolean
      */
     public function sess_set ($key, $val) {
         return $this->_sess->set($key, $val);
     }
 
     /**
-     * 移除 session 项目
-     * @param  [type] $key [description]
-     * @return [type]      [description]
+     * 删除会话变量
+     * @param unknown $key
+     * @return unknown
      */
     public function sess_del ($key) {
         return $this->_sess->del($key);
     }
 
     /**
-     * 销毁 session
-     * @return [type] [description]
+     * 销毁会话
+     * @return unknown
      */
     public function sess_remove () {
         return $this->_sess->remove();
@@ -100,37 +104,36 @@ class module extends rgx {
 
     /**
      * 获取会话ID
-     * @return [type] [description]
+     * @return string
      */
     public function sess_id () {
         return $this->_sess->sess_id();
     }
 
     /**
-     * 获取参数
-     *
-     * @param unknown_type $k
-     * @return unknown
+     * 获取请求内容 
+     * @param string $key
+     * @param string $type
+     * @return mixed
      */
     public final function get ($key, $type = 'R') {
         return router::get($key, $type);
     }
 
     /**
-     * 是否存在某类型的参数
-     *
-     * @param unknown_type $k
-     * @return unknown
+     * 判断请求参数中是否存在某项
+     * @param string $key
+     * @param string $type
+     * @return boolean
      */
     public final function has ($key, $type = 'R') {
         return router::exists($key, $type);
     }
 
     /**
-     * 模板赋值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $value
+     * 模板变量赋值
+     * @param string $key
+     * @param mixed $value
      * @return unknown
      */
     public function assign ($key, $value) {
@@ -138,23 +141,22 @@ class module extends rgx {
     }
 
     /**
-     * 获取模板变量
-     * @param  [type] $key [description]
-     * @return [type]      [description]
+     * 获取当前已设置的模板变量值
+     * @param string $key
+     * @return mixed
      */
     public function get_tpl_var ($key) {
         return $this->_tpl->get($key);
     }
-    
+
     /**
      * 加载模块语言包
-     *
-     * @param unknown_type $name
+     * @param string $name
      */
     public final function lang ($name = 'zh-cn') {
-        core::loadlang(APP_NAME . '@' . $name);
+        lang::load($name);
     }
-    
+
     /**
      * 禁止客户端缓存当前页
      */
@@ -166,9 +168,9 @@ class module extends rgx {
 
     /**
      * 重定向
-     *
-     * @param unknown_type $url
-     * @param unknown_type $parse
+     * @param string $url
+     * @param string $parse
+     * @param string $code
      */
     public final function redirect ($url, $parse = true, $code = '303') {
         header("HTTP/1.1 {$code} See Other");
@@ -176,29 +178,28 @@ class module extends rgx {
         header('X-Powered-By: RGX v' . RGX_VER);
         exit(0);
     }
-    
+
     /**
-     * 转发
-     *
-     * @param unknown_type $class
-     * @param unknown_type $method
+     * 请求转发
+     * @param string $class
+     * @param string $method
+     * @param array $extra
      */
-    public function forward ($class, $method, &$extra = array()) {
+    public function forward ($class, $method, &$extra = []) {
         $class = $class . '_module';
         if (empty($extra)) {
             $extra = &$this->conf;
         }
-        call_user_func(array( new $class($extra), $method . '_action'));
+        call_user_func(array(new $class($extra), $method . '_action'));
     }
-    
+
     /**
-     * Ajax 输出
-     *
-     * @abstract 默认不缓存
-     * @param unknown_type $data
-     * @param unknown_type $type
+     * ajax 输出
+     * @param mixed $data
+     * @param string $type
+     * @param string $output_header
      */
-    public function ajaxout ($data, $type = 'json', $output_header = true) {
+    public function ajax_out ($data, $type = 'json', $output_header = true) {
         plugin::notify('MOD_AJAXOUT');
         $this->nocache();
         header('X-Powered-By: RGX V' . RGX_VER);
@@ -227,117 +228,124 @@ class module extends rgx {
      * @return [type]         [description]
      */
     public function ajax_failure ($msg, $code = 1) {
-        $this->ajaxout([
+        $this->ajax_out([
             'code'  => $code,
             is_array($msg) ? 'error' : 'msg' => $msg
         ]);
     }
 
     /**
-     * ajax 错误输出
+     * ajax 成功输出
      * @param  [type]  $msg   [description]
      * @param  array   $error [description]
      * @param  integer $code  [description]
      * @return [type]         [description]
      */
     public function ajax_success ($msg, $data = [], $url = null, $code = 0) {
-        $this->ajaxout([
+        $this->ajax_out([
             'code'  => $code,
             'msg'   => $msg,
             'data'  => $data,
             'url'   => $url
         ]);
     }
-    
+
     /**
-     * 渲染模板
-     *
-     * @param unknown_type $tplfile
-     * @return unknown
+     * 渲染输出模板内容
+     * @param string $tplfile
+     * @param string $type
+     * @param array  $headers
+     * @return string
      */
     public function display ($tplfile, $type = 'text/html', $headers = []) {
         if ($this->show_profile) {
-            $this->assign('_profile',misc::get_profile());
+            $this->assign('_profile', misc::get_profile());
         }
         plugin::notify('MOD_DISPLAY');
         return app::tpl()->display($tplfile, $type, $headers);
     }
-    
+
     /**
      * 获取解析后的模板内容
-     *
-     * @param unknown_type $tplfile
-     * @return unknown
+     * @param string $tplfile
+     * @return string
      */
     public function fetch ($tplfile) {
         return app::tpl()->fetch($tplfile, true);
     }
-    
+
     /**
-     * form token
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 获取 form token key
+     * @param unknown $suf
+     * @return string
      */
-    public function token ($key) {
-        if (!isset($GLOBALS['_SESS']) || $GLOBALS['_SESS'] === null) {
-            $this->initsess();
-        }
-        $token =  md5(REQUEST_TIME . misc::randstr(4));
-        $this->_sess->set($key . '@' . APP_NAME, $token);
-        return "<input type=\"hidden\" name=\"{$key}\" value=\"{$token}\" />";
+    public function get_token_key ($suf) {
+        return APP_ID . '-' . router::get_mod(false) . '-' . 
+                router::get_act(false) . '-' . $suf;
     }
-    
+
+    /**
+     * 生成表单token
+     * @param string $suf
+     * @param number $ttl
+     * @return string
+     */
+    public function form_token ($suf = 'def', $ttl = 3600) {
+        if (empty($this->_sess)) {
+            $this->sess();
+        }
+        $key = $this->get_token_key($suf);
+        $token = md5(REQUEST_TIME . misc::randstr(8));
+        $this->sess_set($key, $token, $ttl);
+        return "<input id=\"RGX-FORM-TOKEN-{$suf}\" type=\"hidden\" name=\"{$key}\" value=\"{$token}\" />";
+    }
+
     /**
      * 验证 token
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * @param unknown $suf
+     * @return boolean
      */
-    public function verifytoken ($key) {
+    public function verify_token ($suf = 'def') {
         $ret = false;
+        $key = $this->get_token_key($suf);
         $val = $this->get($key, '*');
-        if (!isset($GLOBALS['_SESS']) || $GLOBALS['_SESS'] === null) {
-            $this->initsess();
+        if (empty($this->_sess)) {
+            $this->sess();
         }
-        if ($val == $this->_sess->get($key . '@' . APP_NAME)) {
-            $ret = true;
-        }
-        return $ret;
+        return $val == $this->sess_get($key);
     }
-    
+
     /**
-     * 删除token
-     *
-     * @param unknown_type $key
+     * 删除表单token
+     * @param string $suf
      */
-    public function rmtoken ($key) {
-        if (!isset($GLOBALS['_SESS']) || $GLOBALS['_SESS'] === null) {
-            $this->initsess();
+    public function rmtoken ($suf = 'def') {
+        if (empty($this->_sess)) {
+            $this->sess();
         }
-        $this->_sess->del($key . '@' . APP_NAME);
+        $this->sess_del($this->get_token_key($suf));
     }
-    
+
     /**
      * 显示404页面
-     *
-     * @param unknown_type $msg
+     * @param string $msg
      */
-    public function show404 ($msg) {
-        //header("HTTP/1.1 404 Not Found");
+    public function show_404 ($msg = '404 not found') {
         header('X-Powered-By: RGX v' . RGX_VER);
         plugin::notify('MOD_404');
         if (IS_CLI) {
-            app::cli_msg($msg ?: 'not found');
+            app::cli_msg($msg);
         }
         $this->assign('msg', $msg ?: LANG('404 not found'));
         $this->display(CFG('tpl.404_tpl'), 'text/html', ['HTTP/1.1 404 Not Found']);
     }
-    
+
     /**
      * 显示提示消息
-     *
-     * @param unknown_type $msg
+     * @param unknown $msg
+     * @param unknown $url
+     * @param string $auto_jump
+     * @param number $ttl
      */
     public function show_msg ($msg, $url = null, $auto_jump = false, $ttl = 2) {
         if (IS_CLI) {

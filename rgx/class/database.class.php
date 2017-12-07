@@ -2,20 +2,19 @@
 namespace re\rgx;
 /**
  * 数据库访问接口抽象类
- * @copyright reginx.com
- * $Id: database.class.php 5 2017-07-19 03:44:30Z reginx $
+ * @author reginx
  */
 abstract class database {
-    
+
     /**
-     * 是否开启 profile
-     * @var unknown
+     * 是否开启概况描述
+     * @var bool
      */
     public $profiling = false;
-    
+
     /**
-     * 报告
-     * @var unknown
+     * 概况
+     * @var array
      */
     public $profile   = [
         'totals'    => 0,
@@ -25,11 +24,10 @@ abstract class database {
     ];
 
     /**
-     * 获取数据操作对象
-     *
+     * 获取数据操作实例
      * @param array $conf
-     * @param boolean $mode
-     * @return mixed
+     * @throws exception
+     * @return \re\rgx\database
      */
     public static final function get_instance ($conf = []) {
         static $dbobj = null;
@@ -49,63 +47,62 @@ abstract class database {
         }
         return $dbobj;
     }
-    
+
     /**
-     * select db
-     * @param unknown $db
+     * 选择数据库
+     * @param string $db
      */
     abstract public function select_db ($db);
-    
+
     /**
-     * 查询
+     * 执行查询
      * @param unknown $sql
      */
     abstract public function query ($sql);
 
     /**
      * 获取单条记录
-     * @param unknown $sql
-     * @param string $quiet
-     * @param string $callback
+     * @param string $sql
+     * @param bool   $quiet
+     * @param mixed  $callback
      */
     abstract public function get ($sql, $quiet = false, $callback = false);
 
     /**
      * 获取多条记录
-     * @param unknown $sql
-     * @param unknown $key
+     * @param string $sql
+     * @param string $key
      * @param string $quiet
-     * @param unknown $callback
+     * @param mixed  $callback
      */
     abstract public function get_all ($sql, $key = null, $quiet = false, $callback = false);
-    
+
     /**
      * 获取错误描述
      */
     abstract public function get_error ();
-    
+
     /**
      * 更新
-     * @param unknown $sql
-     * @param unknown $quiet
+     * @param string $sql
+     * @param bool   $quiet
      */
     abstract public function update ($sql, $quiet = false);
-    
+
     /**
-     * 添加
-     * @param unknown $sql
-     * @param unknown $quiet
-     * @param unknown $mode
+     * 新增
+     * @param string  $sql
+     * @param bool    $quiet
      */
     abstract public function insert ($sql, $quiet = false);
-    
+
     /**
      * 删除
      * @param unknown $sql
      * @param string $quiet
      */
     abstract public function delete ($sql, $quiet = false);
-    
+
     /**
      * 获取单条单字段
      * @param unknown $sql
@@ -121,13 +118,13 @@ abstract class database {
      * @return [type]            [description]
      */
     abstract public function exec ($sql, $callback = null);
-    
+
     /**
      * 执行事务
      * @param array $sql
      */
     abstract public function transaction ($sql_list = []);
-    
+
     /**
      * 设置编码
      * @param string $charset
@@ -139,7 +136,7 @@ abstract class database {
      * @return [type] [description]
      */
     abstract public function get_sql ();
-    
+
     /**
      * 获取sql执行报告
      * @param mixed $id

@@ -2,33 +2,30 @@
 namespace re\rgx;
 /**
  * Redis 缓存驱动类
- * @copyright reginx.com
- * $Id: redis.cache.php 5 2017-07-19 03:44:30Z reginx $
+ * @author reginx
  */
 class redis_cache extends cache {
     
     /**
-     * 键 前缀
-     *
-     * @var unknown_type
+     * 前缀
+     * @var string
      */
     private $_pre = 'rex_';
 
     /**
      * Redis 对象
-     *
-     * @var unknown_type
+     * @var unknown
      */
     private $_redis = null;
     
-    
     /**
-     * 架构函数
-     *
-     * @param unknown_type $conf
+     * 架构方法
+     * @param array $conf
+     * @throws exception
      */
-    public function __construct ($conf = array()) {
-        $this->_pre = isset($GLOBALS['_RC']['cache']['pre']) ? $GLOBALS['_RC']['cache']['pre'] : 'rex_';
+    public function __construct ($conf = []) {
+        $this->_pre = isset($GLOBALS['_RC']['cache']['pre']) ? 
+                        $GLOBALS['_RC']['cache']['pre'] : 'rex_';
         if (!class_exists('Redis', false)) {
             throw new exception(LANG('does not support', '\Redis '), exception::NOT_EXISTS);
         }
@@ -44,9 +41,8 @@ class redis_cache extends cache {
     
     /**
      * 获取项目键
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * @param string $key
+     * @return string
      */
     private function _getkey ($key) {
         return $this->_pre . $key;
@@ -54,6 +50,8 @@ class redis_cache extends cache {
     
     /**
      * 统计
+     * {@inheritDoc}
+     * @see \re\rgx\cache::stat()
      */
     public function stat () {
         $ret   = $stat  = array();
@@ -72,8 +70,8 @@ class redis_cache extends cache {
 
     /**
      * 获取缓存
-     *
-     * @param String $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::get()
      */
     public function get($key) {
         $this->count('r');
@@ -89,10 +87,8 @@ class redis_cache extends cache {
 
     /**
      * 设置缓存
-     *
-     * @param String $key
-     * @param Mixed $value
-     * @param Integer $ttl
+     * {@inheritDoc}
+     * @see \re\rgx\cache::set()
      */
     public function set ($key, $value, $ttl = 0) {
         $this->count('w');
@@ -100,13 +96,13 @@ class redis_cache extends cache {
             $value = serialize($value);
         }
         $key = $this->_getkey($key);
-        return $this->_redis->set($key, $value, $ttl > 0 ? array('ex' => $ttl) : array());
+        return $this->_redis->set($key, $value, $ttl > 0 ? ['ex' => $ttl] : []);
     }
 
     /**
      * 删除指定缓存
-     *
-     * @param String $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::del()
      */
     public function del ($key) {
         return $this->_redis->del($this->_getkey($key));
@@ -114,6 +110,8 @@ class redis_cache extends cache {
 
     /**
      * 批量清除缓存
+     * {@inheritDoc}
+     * @see \re\rgx\cache::flush()
      */
     public function flush ($group = null) {
         return $this->_redis->flushDB();

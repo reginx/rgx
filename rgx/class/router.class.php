@@ -1,32 +1,32 @@
 <?php
 namespace re\rgx;
 /**
- * router
+ * 路由类
  * @author reginx
- * $Id: router.class.php 733 2017-11-21 02:29:28Z reginx $
  */
 class router extends rgx {
-    
+
     /**
-     * module name
-     * @var unknown
+     * 模块名称
+     * @var string
      */
     private static $_mod = 'index';
-    
+
     /**
-     * action name
-     * @var unknown
+     * 动作名称
+     * @var string
      */
     private static $_act = 'index';
-    
+
     /**
-     * request params
-     * @var unknown
+     * 请求参数
+     * @var array
      */
     private static $_request_params = [];
-    
+
     /**
-     * get module class name
+     * 获取请求的模块名称
+     * @param string $ext
      * @return string
      */
     public static function get_mod ($ext = true) {
@@ -34,7 +34,8 @@ class router extends rgx {
     }
 
     /**
-     * get action method name
+     * 获取请求的方法名称
+     * @param string $ext
      * @return string
      */
     public static function get_act ($ext = true) {
@@ -42,15 +43,14 @@ class router extends rgx {
     }
 
     /**
-     * 获取当前 Url 的路由字串
-     *
-     * @param unknown_type $url
-     * @return unknown
+     * 获取当前页面的url表达式
+     * @return string
      */
     public static function get_current_url () {
-        $temp = array();
-        $temp[] = self::$_mod;
-        $temp[] = self::$_act;
+        $temp = [
+            self::$_mod,
+            self::$_act
+        ];
         foreach ((array) self::$_request_params as $k => $v) {
             if (!empty($k) && !empty($v)) {
                 $temp[] = $k;
@@ -60,33 +60,32 @@ class router extends rgx {
         if (defined('D_ALIAS')) {
             return (D_ALIAS) . '.' . implode('-', $temp);
         }
-
         return (APP_NAME == 'default' ? '' : (APP_NAME . ':')) .  implode('-', $temp);
     }
-    
 
     /**
-     * get request param
-     * @param unknown $key
+     * 获取请求参数值
+     * @param string $key
      * @param string $scrope
+     * @return mixed
      */
     public static function get ($key, $scrope = 'r') {
         return self::_get_request_param($key, $scrope);
     }
-    
+
     /**
-     * exists
+     * 是否存在指定的请求参数
      * @param unknown $key
      * @param string $scrope
-     * @return mixed
+     * @return mixed|NULL|array
      */
     public static function exists ($key, $scrope = 'r') {
         return self::_get_request_param($key, $scrope, false);
     }
-    
+
     /**
-     * Get Request Params
-     * @param unknown $key
+     * 获取请求参数
+     * @param string $key
      * @param string $scrope
      * @param string $fetch
      * @return mixed
@@ -116,15 +115,18 @@ class router extends rgx {
         }
         return $fetch ? ($key === null ? $var : (isset($var[$key]) ? $var[$key] : null)) : isset($var[$key]);
     }
-    
-    
+
+    /**
+     * 解析命令行参数
+     * @throws exception
+     * @example index/index || index || index/index/uid=2 || index/index/uid=2/name=abc
+     */
     public static function parse_cli () {
         $pathinfo = getenv('request_uri') ?: (isset($_SERVER['argv'][1]) ? $_SERVER['argv'][1] : null);
         if (empty($pathinfo)) {
             $pathinfo = 'index/index';
         }
         putenv("request_uri={$pathinfo}");
-        // index/index || index || index/index/uid=2 || index/index/uid=2/name=abc
         if (!preg_match('/^(?:[0-9a-z\_\-]+)((\/\w+)?(\?.+?)*)?$/i', $pathinfo)) {
             throw new exception(LANG('invalid pathinfo', $pathinfo), exception::NOT_EXISTS);
         }
@@ -135,17 +137,16 @@ class router extends rgx {
         }
         self::$_mod = array_shift($path);
         self::$_act = array_shift($path);
-
         parse_str($qs ?: '', self::$_request_params);
     }
-    
+
     /**
-     * parse url
-     * @param unknown $config
+     * 解析url
+     * @param array $config
      */
     public static function parse ($config) {
-
-        if (isset($_SERVER['PATH_INFO']) && !empty($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] != "/") {
+        if (isset($_SERVER['PATH_INFO']) && 
+                !empty($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] != "/") {
             // compatible for nginx PATH_INFO
             $requrl = substr($_SERVER['PATH_INFO'], 1);
             // 去除后缀
@@ -198,8 +199,8 @@ class router extends rgx {
             self::$_mod = $ma_str;
             self::$_act = $config['def_act'];
         }
-        self::$_mod = empty(self::$_mod) ? $config['def_mod'] : self::$_mod;
-        self::$_act = empty(self::$_act) ? $config['def_act'] : self::$_act;
+        self::$_mod = self::$_mod ?: $config['def_mod'];
+        self::$_act = self::$_act ?: $config['def_act'];
 
         // request parameters
         if (!empty($requrl)) {
@@ -218,12 +219,11 @@ class router extends rgx {
                 }
             }
         }
-
     }
 
     /**
      * 获取路由配置
-     * @return [type] [description]
+     * @return array
      */
     public static function get_config () {
         // 路由配置信息
@@ -238,19 +238,16 @@ class router extends rgx {
     }
 
     /**
-     * url 生成
-     *
-     * @return unknown
+     * 生成 url
+     * @return string
      */
     public static function url () {
-
         $config = self::get_config();
         $input = func_get_args();
         $input = is_array($input[0]) ? $input[0] : $input;
         if (empty($input)) {
             return 'javascript:;';
         }
-
         $prefix = APP_URL;
         $suffix = $config['suf'];
 
@@ -296,7 +293,7 @@ class router extends rgx {
         if (!empty($params)) {
             $params = $config['ap_sep'] . join($config['pg_sep'], $params);
         }
-        
+
         $script_file = $config['rewrite'] ? '' : 'index.php/';
         $params  = $params ?: '';
 

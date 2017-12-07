@@ -2,41 +2,37 @@
 namespace re\rgx;
 /**
  * 插件类
- * @author reginx.com
- * $Id: plugin.class.php 5 2017-07-19 03:44:30Z reginx $
+ * @author reginx
  */
 class plugin extends rgx {
-    
-    /**
-     * 系统默认Hook配置
-     *
-     * @var unknown_type
-     */
-    private static $defhooks = array(
-        'REX_LOAD'      => [],
-        'TPL_INIT'      => [],
-        'MOD_INIT'      => [],
-        'MOD_DIS'       => [],
-        'MOD_404'       => [],
-    );
 
     /**
-     * 插件列表
-     * @var null
+     * 默认切入点配置
+     * @var array
+     */
+    private static $defhooks = [
+        'RGX_LOAD'      => [],
+        'TPL_INIT'      => [],
+        'MOD_INIT'      => [],
+        'MOD_DISPLAY'   => [],
+        'MOD_404'       => [],
+    ];
+
+    /**
+     * 列表
+     * @var array
      */
     private static $hooks = null;
-    
+
     /**
-     * 通知
-     *
-     * @param unknown_type $ctype
-     * @param unknown_type $mod
-     * @param unknown_type $act
-     * @param unknown_type $param
+     * 执行通知
+     * @param string $ctype
+     * @param number $limit
+     * @param array $param
      */
-    public static final function notify ($ctype = 'default', $limit = 0, &$param = array()) {
+    public static final function notify ($ctype = 'default', $limit = 0, &$param = []) {
         if (self::$hooks === null) {
-            self::loadplugins();
+            self::load();
         }
         if (isset(self::$hooks[$ctype]) && ! empty(self::$hooks[$ctype])) {
             foreach ((array) self::$hooks[$ctype] as $k => $v) {
@@ -51,13 +47,12 @@ class plugin extends rgx {
     /**
      * 加载插件配置信息
      */
-    public static final function loadplugins () {
+    public static final function load () {
         if (is_file(APP_PATH . 'config/plugins.php')) {
             self::$hooks = include (APP_PATH . 'config/plugins.php');
         }
         else {
-            self::$hooks = array();
+            self::$hooks = [];
         }
     }
- 
 }

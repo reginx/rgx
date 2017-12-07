@@ -1,62 +1,58 @@
 <?php
 namespace re\rgx;
 /**
- * Memcache
- * @copyright reginx.com
- * $Id: memcache.cache.php 5 2017-07-19 03:44:30Z reginx $
+ * Memcache 缓存驱动类
+ * @author reginx
  */
 class mem_cache extends cache {
 
     /**
      * 当前连接的 Server ID
-     *
-     * @var unknown_type
+     * @var unknown
      */
     private $_serverid = null;
 
     /**
      * 配置信息
-     *
-     * @var unknown_type
+     * @var array
      */
-    private $_conf = array();
+    private $_conf = [];
 
     /**
-     * 当前配置信息
-     *
-     * @var unknown_type
+     * 前缀
+     * @var string
      */
-    // private $_serv = array();
-    
     private $_pre = 'pre_';
 
     /**
      * 当前Memcache 对象
-     *
-     * @var unknown_type
+     * @var unknown
      */
     private $_mobj = null;
 
     /**
-     * 架构函数
-     *
-     * @param unknown_type $opts
+     * 架构方法
+     * @param array $opts
+     * @throws exception
      */
     public function __construct ($opts) {
         $this->_conf = &$opts;
         $this->_serverid = mt_rand(0, count($this->_conf) - 1);
         $this->_serv = $this->_conf[$this->_serverid];
-        $this->_pre  = isset($this->_conf[$this->_serverid]['pre']) ? $this->_conf[$this->_serverid]['pre'] : $this->_pre;
-        if (!class_exists('Memcache', false)) {
-            throw new exception(LANG('does not support', '\Memcache '), exception::NOT_EXISTS);
+        $this->_pre  = isset($this->_conf[$this->_serverid]['pre']) ? 
+                        $this->_conf[$this->_serverid]['pre'] : $this->_pre;
+        if (!class_exists('\Memcache', false)) {
+            throw new exception(LANG('does not support', '\Memcache '), 
+                exception::NOT_EXISTS);
         }
         if (empty($this->_mobj)) {
-            $this->_mobj = new Memcache();
+            $this->_mobj = new \Memcache();
         }
         if (count($this->_conf) == 1) {
             // 单台 
             if (!$this->_mobj->connect($this->_serv['host'], $this->_serv['port'])) {
-            throw new exception(LANG('config error', '\Memcache'), exception::CONFIG_ERROR);
+                throw new exception(LANG('config error', '\Memcache'), 
+                    exception::CONFIG_ERROR);
             }
         }
         else {
@@ -70,11 +66,9 @@ class mem_cache extends cache {
     }
 
     /**
-     * 存入值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $val
-     * @param unknown_type $ttl
+     * 写入
+     * {@inheritDoc}
+     * @see \re\rgx\cache::set()
      */
     public function set ($key, $val, $ttl = 0) {
         $this->count('w');
@@ -83,10 +77,9 @@ class mem_cache extends cache {
     }
 
     /**
-     * 获取值
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 获取
+     * {@inheritDoc}
+     * @see \re\rgx\cache::get()
      */
     public function get ($key) {
         $this->count('r');
@@ -95,8 +88,8 @@ class mem_cache extends cache {
 
     /**
      * 清除全部缓存数据
-     *
-     * @param unknown_type $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::flush()
      */
     public function flush ($group = null) {
         $this->_mobj->flush();
@@ -104,10 +97,8 @@ class mem_cache extends cache {
 
     /**
      * 删除单个缓存
-     *
-     * @param unknown_type $key
-     * @param unknown_type $pre
-     * @return unknown
+     * {@inheritDoc}
+     * @see \re\rgx\cache::del()
      */
     public function del ($key) {
         return $this->_mobj->delete($this->_getkey($key));
@@ -115,6 +106,8 @@ class mem_cache extends cache {
 
     /**
      * 运行状态统计
+     * {@inheritDoc}
+     * @see \re\rgx\cache::stat()
      */
     public function stat () {
         $stat = $this->_mobj->getStats();
@@ -129,9 +122,8 @@ class mem_cache extends cache {
     
     /**
      * 获取 key
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return string
      */
     private function _getkey ($str) {
         return $this->_pre . $str;

@@ -1,58 +1,59 @@
 <?php
-
 namespace re\rgx;
-
+/**
+ * 图片操作类
+ * @author reginx
+ */
 abstract class image extends rgx {
-    
+
     /**
      * 左侧
-     * @var unknown
+     * @var number
      */
     const LEFT = 1;
-    
+
     /**
      * 左上角
-     * @var unknown
+     * @var number
      */
     const LEFT_TOP = 2;
-    
+
     /**
      * 左下角
-     * @var unknown
+     * @var number
      */
     const LEFT_BOTTOM = 3;
-    
+
     /**
      * 右侧
-     * @var unknown
+     * @var number
      */
     const RIGHT = 4;
-    
+
     /**
      * 右上角
-     * @var unknown
+     * @var number
      */
     const RIGHT_TOP = 5;
-    
+
     /**
      * 右下角
-     * @var unknown
+     * @var number
      */
     const RIGHT_BOTTOM = 6;
-    
+
     /**
      * 居中
      * @var integer
      */
     const CENTER = 7;
-    
+
     /**
      * 获取图片信息
-     *
-     * @param unknown $file
+     * @param string $file
      */
     abstract public function get_info ($file);
-    
+
     /**
      * 生成缩略图
      * @param string $sfile
@@ -60,14 +61,14 @@ abstract class image extends rgx {
      * @param array $config
      */
     abstract public function thumb ($sfile, $dfile, $config = []);
-    
+
     /**
      * 生成验证码
-     * @param unknown $str
+     * @param string $str
      * @param array $config
      */
     abstract public function captcha ($str, $config = []);
-    
+
     /**
      * 图片裁剪
      * @param string $sfile
@@ -75,19 +76,19 @@ abstract class image extends rgx {
      * @param array $config
      */
     abstract public function cut ($sfile, $dfile, $config = []);
-    
+
     /**
      * 生成水印图片
      * @param string $sfile
      * @param array $config
      */
     abstract public function water ($sfile, $dfile = null, $config = []);
-    
+
     /**
-     * 获取图片操作对象
-     * @param array $config
+     * 获取图片操作实例
+     * @param string $driver
      * @throws exception
-     * @return object
+     * @return \re\rgx\image
      */
     public static final function get_instance ($driver = null) {
         static $ret = null;
@@ -117,7 +118,6 @@ abstract class image extends rgx {
         return $ret;
     }
 
-
     /**
      * 解析生成缩略图对应的url
      * @param string $image
@@ -142,12 +142,12 @@ abstract class image extends rgx {
         }
         return $ret;
     }
-    
+
     /**
      * 获取相关位置对应的坐标
-     * @param string $type
-     * @param unknown $pos
-     * @example $config = ['swidth' => 600, 'sheight' => 338, 'dwidth' => 200, 'dheight' => 140, 'padding' => 10]
+     * @param number $type
+     * @param array $pos
+     * @return number[]
      */
     public static final function get_position ($type, $pos = []) {
         $ret = [];
@@ -183,12 +183,11 @@ abstract class image extends rgx {
 
     /**
      * 获取生成缩略图相关参数
-     *
-     * @param unknown_type $swidth 原图片宽度
-     * @param unknown_type $sheight 原图片高度
-     * @param unknown_type $twidth 目标宽度
-     * @param unknown_type $theight 目标高度
-     * @return array
+     * @param number $srcw
+     * @param number $srch
+     * @param number $dstw
+     * @param number $dsth
+     * @return number[]
      */
     public static function get_thumb_size ($srcw, $srch, $dstw, $dsth) {
         $ret = [];
@@ -214,14 +213,14 @@ abstract class image extends rgx {
 
     /**
      * 获取图片长宽
-     * @param  [type] $img [description]
-     * @return [type]      [description]
+     * @param string $img
+     * @return number[]
      */
     public static function get_image_size ($img) {
         $ret = getimagesize($img);
         return [
-            'width'     => $ret[0],
-            'height'    => $ret[1]
+            'width'     => $ret[0] ?: 0,
+            'height'    => $ret[1] ?: 0
         ];
     }
 }

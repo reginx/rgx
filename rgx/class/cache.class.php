@@ -1,17 +1,14 @@
 <?php
-/**
- * 缓存操作接口抽象类
- * @copyright reginx.com
- * $Id: cache.class.php 5 2017-07-19 03:44:30Z reginx $
- */
 namespace re\rgx;
-
+/**
+ * 缓存操作抽象类
+ * @author reginx
+ */
 abstract class cache extends rgx {
 
     /**
-     * 统计结果
-     *
-     * @var unknown_type
+     * 操作统计
+     * @var array
      */
     protected $_stat = array(
         'write' => 0,
@@ -28,23 +25,28 @@ abstract class cache extends rgx {
         'file'  => []
     ];
 
+    /**
+     * 实例列表
+     * @var array
+     */
     private static $_obj = [];
 
     /**
      * 统计
-     *
-     * @param unknown_type $type
+     * @param string $type
      */
     public final function count ($type = 'w') {
         $this->_stat[$type == 'w' ? 'write' : 'read'] ++;
     }
     
     /**
-     * 架构函数
-     *
-     * @param unknown_type $config
+     * 架构方法
+     * @param array $config
+     * @param array $extra
+     * @throws exception
+     * @return \re\rgx\cache
      */
-    public static final function get_instance ($config = array(), $extra = []) {
+    public static final function get_instance ($config = [], $extra = []) {
         $extra = $extra ?: ['name' => APP_NAME, 'id' => APP_ID];
         $key   = join('_', $extra);
         if (!isset(self::$_obj[$key])) {
@@ -71,41 +73,35 @@ abstract class cache extends rgx {
 
         return self::$_obj[$key];
     }
-    
-    public final static function chk () {}
 
     /**
      * 缓存数据统计
-     *
-     * @param unknown_type $type
      */
     abstract public function stat ();
 
     /**
      * 获取缓存
-     *
-     * @param String $key
+     * @param string $key
      */
     abstract public function get ($key);
 
     /**
-     * 设置缓存
-     *
-     * @param String $key
-     * @param Mixed $value
-     * @param Integer $ttl
+     * 写入缓存
+     * @param string $key
+     * @param mixed $value
+     * @param number $ttl
      */
     abstract public function set ($key, $value, $ttl = 0);
 
     /**
-     * 删除指定缓存
-     *
-     * @param String $key
+     * 删除缓存项
+     * @param string $key
      */
     abstract public function del ($key);
 
     /**
-     * 清除缓存
+     * 清空
+     * @param mixed $group
      */
     abstract public function flush ($group = null);
 }

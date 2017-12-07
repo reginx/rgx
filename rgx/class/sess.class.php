@@ -1,79 +1,68 @@
 <?php
-/**
- * session 抽象接口
- * @copyright reginx.com
- * $Id: sess.class.php 5 2017-07-19 03:44:30Z reginx $
- */
 namespace re\rgx;
-
+/**
+ * session 抽象类
+ * @author reginx
+ */
 abstract class sess {
 
     /**
      * 获取项目值
-     *
-     * @param unknown_type $key
+     * @param mixed $key
      */
     abstract protected function get ($key);
-    
+
     /**
      * 获取当前配置信息 (sess_name, sess_id, expires)
-     *
      */
     abstract protected function get_config ();
-    
+
     /**
      * 设置项目值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $value
+     * @param string $key
+     * @param mixed  $value
      */
     abstract protected function set ($key, $value);
-    
+
     /**
      * 是否存在某项
-     *
-     * @param unknown_type $key
+     * @param string $key
      */
     abstract protected function exists ($key);
-    
+
     /**
      * 获取回话ID
-     *
      */
     abstract protected function sess_id ();
-    
+
     /**
      * 删除项目值
-     *
-     * @param unknown_type $key
+     * @param string $key
      */
     abstract protected function del ($key);
-    
+
     /**
-     * 删除会话
-     *
+     * 会话销毁
      */
     abstract protected function remove ();
-    
-    
+
     /**
      * GC
-     *
      */
     abstract protected function gc ();
-    
+
     /**
      * 获取域名
-     *
-     * @return unknown
+     * @return string
      */
     public static final function get_domain () {
         static $_domain = null;
         if (empty($_domain)) {
             $domain = $_SERVER['HTTP_HOST'];
             if (!filter_var($domain, FILTER_VALIDATE_IP)) {
-                if (substr_count($_SERVER['HTTP_HOST'] , '.') >= 2 ){
-                    $_domain = substr($_SERVER['HTTP_HOST'] , strpos($_SERVER['HTTP_HOST'] , '.'));
+                if (substr_count($_SERVER['HTTP_HOST'], '.') >= 2 ){
+                    $_domain = substr($_SERVER['HTTP_HOST'], 
+                                strpos($_SERVER['HTTP_HOST'], '.'));
                 }
                 else {
                     $_domain = '.' . $_SERVER['HTTP_HOST'];
@@ -88,12 +77,15 @@ abstract class sess {
         }
         return $_domain;
     }
-    
+
     /**
-     * 获取 sess 操作对象
-     *
-     * @param unknown_type $conf
-     * @return unknown
+     * 获取 sess 操作实例
+     * @param mixed $conf
+     * @param string $sess_name
+     * @param string $sess_id
+     * @param array $extra
+     * @throws exception
+     * @return \re\rgx\sess
      */
     public static final function get_instance($conf, $sess_name = null, $sess_id = null, $extra = []) {
         static $sobj = null;
@@ -114,10 +106,10 @@ abstract class sess {
 
     /**
      * 设置 Cookie
-     * @param [type]  $k    [description]
-     * @param [type]  $v    [description]
-     * @param integer $ttl  [description]
-     * @param string  $path [description]
+     * @param string $k
+     * @param string $v
+     * @param number $ttl
+     * @param string $path
      */
     public static function set_cookie ($k, $v, $ttl = 0, $path = '/') {
         setcookie($k, $v, $ttl , $path , self::get_domain());

@@ -1,99 +1,97 @@
 <?php
-/**
- * 错误异常类
- * @copyright reginx.com
- * $Id: exception.class.php 5 2017-07-19 03:44:30Z reginx $
- */
 namespace re\rgx;
-
+/**
+ * 异常类
+ * @author reginx
+ */
 class exception extends \Exception {
     
     /**
-     * 异常描述
-     * @var unknown
+     * 异常描述信息
+     * @var mixed
      */
     private $_msg = null;
     
     /**
      * 错误代码
-     * @var unknown
+     * @var integer
      */
     private $_code = 0;
     
     /**
-     * 是否日志记录
-     * @var unknown
+     * 是否开启日志记录
+     * @var bool
      */
     private $_log  = false;
     
     /**
-     * 不存在 Code
-     * @var unknown
+     * 不存在 code
+     * @var integer
      */
     const NOT_EXISTS = 1;
     
     /**
-     * 不允许自动load Code
-     * @var unknown
+     * 不允许自动load code
+     * @var integer
      */
     const AUTO_LOAD_NOT_ALLOWED = 2;
     
     /**
-     * 无效的名称
+     * 无效的名称 code
      * @var integer
      */
     const INVALID_NAME = 3;
     
     /**
-     * 无效的类型
+     * 无效的类型 code
      * @var integer
      */
     const INVALID_TYPE = 4;
     
     /**
-     * 无效的正则表达式
-     * @var unknown
+     * 无效的正则表达式 code
+     * @var integer
      */
     const INVALID_REGEX = 5;
     
     /**
-     * 无效的回调函数
+     * 无效的回调函数 code
      * @var integer
      */
     const INVALID_CALLBACK = 6;
     
     /**
-     * 不支持
+     * 不支持 code
      * @var integer
      */
     const NOT_SUPPORT = 9;
     
     /**
-     * IO 错误 (含权限相关)
-     * @var unknown
+     * IO 错误 (含权限相关) code
+     * @var integer
      */
     const IO_ERROR = 10;
     
     /**
-     * 配置错误
+     * 配置错误 code
      * @var integer
      */
     const CONFIG_ERROR = 21;
     
     /**
-     * SQL 查询错误
-     * @var unknown
+     * SQL 查询错误 code
+     * @var integer
      */
     const SQL_QUERY_ERROR = 31;
 
     /**
-     * 表模型错误
-     * @var unknown
+     * 表模型错误 code
+     * @var integer
      */
     const TABLE_ERROR = 32;
     
     /**
-     * 输出
+     * 错误输出
      * {@inheritDoc}
      * @see Exception::__toString()
      */
@@ -148,7 +146,7 @@ class exception extends \Exception {
             for ($i = 0; $i < sizeof($trace); $i ++) {
                 $sfile = $trace[$i]['file'];
                 if (empty($sfile) && $i >= 1) {
-                    $sfile = $trace[$i-1]['file'];
+                    $sfile = $trace[$i]['file'];
                 }
                 $str .= '<li>[ ' . sprintf('#%02d', $i) . ' line:' .
                          sprintf('%05d', empty($trace[$i]['line']) ? 0 : $trace[$i]['line']) . ' ] ';
@@ -170,7 +168,7 @@ class exception extends \Exception {
     
     /**
      * 架构方法
-     * @param unknown $message
+     * @param string $message
      * @param number $code
      * @param string $log
      */

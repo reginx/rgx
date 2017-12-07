@@ -1,17 +1,14 @@
 <?php
-/**
- * lang
- * $Id: lang.class.php 5 2017-07-19 03:44:30Z reginx $
- * @author reginx
- * @package re\rgx
- */
 namespace re\rgx;
-
+/**
+ * 语言包类
+ * @author reginx
+ */
 class lang extends rgx {
 
     /**
      * 默认语言包
-     * @var unknown
+     * @var array
      */
     private static $lang  = [
         'zh_cn'     => [
@@ -55,7 +52,7 @@ class lang extends rgx {
     
     /**
      * 默认语言地区
-     * @var unknown
+     * @var string
      */
     private static $local = 'zh_cn';
     
@@ -69,7 +66,6 @@ class lang extends rgx {
 
     /**
      * 获取
-     * @param string $key
      */
     public static function get () {
         $args = func_get_args();
@@ -92,6 +88,10 @@ class lang extends rgx {
         return $source;
     }
 
+    /**
+     * 获取所有语言变量
+     * @return array
+     */
     public static function get_all () {
         return self::$lang;
     }
@@ -118,6 +118,17 @@ class lang extends rgx {
                 self::$lang[$k] = [];
             }
             self::$lang[$k] = array_merge(self::$lang[$k], $v);
+        }
+    }
+    
+    /**
+     * 加载语言包
+     * @param string $name
+     */
+    public static function load ($name) {
+        $file = LANG_PATH . "{$name}.lang.php";
+        if (is_file($file) || file_exists($file)) {
+            self::set_all(include($file));
         }
     }
 }

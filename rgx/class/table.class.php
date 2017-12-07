@@ -2,84 +2,54 @@
 namespace re\rgx;
 /**
  * 表模型类
- *
- * @author rgx
- * @copyright reginx.com
- * $Id: table.class.php 805 2017-12-03 03:59:43Z reginx $
+ * @author reginx
  */
-
 class table extends rgx {
 
     /**
-     * 低优先级
-     */
-    const SQL_LOW = 'low_priority';
-
-    /**
-     * 高优先级
-     */
-    const SQL_HIGH = 'high_priority';
-
-    /**
-     * 延迟
-     */
-    const SQL_DELAY = 'delayed';
-
-    /**
-     * insert action
+     * 数据插入操作
+     * @var integer
      */
     const OP_INSERT = 1;
 
     /**
-     * update action
+     * 数据更新操作
+     * @var integer
      */
     const OP_UPDATE = 2;
 
     /**
-     * replace action
+     * 数据replace操作
+     * @var integer
      */
     const OP_REPLACE = 3;
 
     /**
-     * where and
-     */
-    const LOGIC_AND = 1;
-
-    /**
-     * where or
-     */
-    const LOGIC_OR  = 2;
-
-    /**
-     * 表 DB 配置
-     *
-     * @var unknown_type
+     * 数据库配置
+     * @var array
      */
     public $dbconf = [];
 
     /**
-     * 表数据
-     *
-     * @var unknown_type
+     * 表模型数据
+     * @var array
      */
     protected $data = [];
 
     /**
-     * 字段输入验证
-     *
-     * @var unknown_type
+     * 字段验证规则配置
+     * @var array
      */
     public $validate = [];
 
     /**
-     * 字段默认
-     *
-     * @var unknown_type
+     * 字段默认值
+     * @var array
      */
     public $defaults = [];
 
     /**
-     * 唯一性约束
+     * 唯一性检测规则配置
      * @var array
      */
     public $unique_check = [];
@@ -91,103 +61,92 @@ class table extends rgx {
     public $unique_msg = [];
 
     /**
-     * 字段过滤规则
-     *
-     * @var unknown_type
+     * 字段过滤规则配置
+     * @var array
      */
     public $filter = [];
 
     /**
-     * 字段信息
-     * @var unknown
+     * 字段列表
+     * @var array
      */
     protected $_fields = [];
 
     /**
      * 主键信息
-     * @var unknown
+     * @var array
      */
     protected $_primary_key = [];
 
     /**
      * 默认编码
-     * @var unknown
+     * @var string
      */
     protected $_charset = 'utf8';
 
     /**
-     * 数据验证错误信息
-     *
-     * @var unknown_type
+     * 操作错误提示信息
+     * @var array
      */
     private $_error_msg = [];
 
     /**
-     * 数据库连接对象
-     *
-     * @var unknown_type
+     * 数据库操作实例
+     * @var \re\rgx\database
      */
     private $_dbobj = null;
 
     /**
-     * sql语句构造数组
-     *
-     * @var unknown_type
+     * sql 构造数据
+     * @var array
      */
     private $_sql = [];
 
     /**
-     * 表模型配置信息
-     *
-     * @var unknown_type
+     * 表模型配置
+     * @var array
      */
     public $_conf = [];
 
     /**
-     * 是否保留上一次查询的条件
-     *
-     * @var unknown_type
+     * 是否保留上一次查询的条件 (默认清除)
+     * @var boolean
      */
     private $_keep = FALSE;
 
     /**
-     * 执行一次sql之后, 是否清空当前对象data
-     * 生效次数一次
-     *
-     * @var unknown_type
+     * 是否重置清空data属性 (默认清空)
+     * @var boolean
      */
     private $_reset = true;
 
     /**
-     * 数组键字段
-     *
-     * @var unknown_type
+     * 结果集数组key设置 (默认为数字下标)
+     * @var mixed
      */
     private $_akey = null;
 
     /**
-     * 是否使用静默模式
-     *
-     * @var unknown_type
+     * 是否使用静默模式 (静默模式在出错后会继续执行)
+     * @var boolean
      */
     private $_quiet = false;
 
     /**
-     * 回调
-     * @var unknown
+     * 结果集数组元素处理回调
+     * @var mixed
      */
     private $_map = false;
 
     /**
-     * 是否通过 load 方式装载
+     * 是否是通过 load 方式装载了data数据
      * @var boolean
      */
     private $_isload = false;
 
-
     /**
-     * 构造函数
-     * 支持单表定义配置
+     * 架构方法
+     * @param string $class
      */
     public function __construct ($class = null) {
         $config = CFG('db');
@@ -204,8 +163,7 @@ class table extends rgx {
     }
 
     /**
-     * clone 对象属性初始化
-     * @return [type] [description]
+     * clone 触发
      */
     public function __clone () {
         $this->_dbobj = clone $this->_dbobj;
@@ -220,18 +178,16 @@ class table extends rgx {
     }
 
     /**
-     * 获取表名称
-     *
-     * @return unknown
+     * 获取表模型对应的数据表名称
+     * @return string
      */
     public function get_name () {
         return $this->_conf['table_name'];
     }
 
     /**
-     * 获取所有表
-     *
-     * @return unknown
+     * 获取当前库里符合匹配的所有数据表列表
+     * @return array
      */
     public function get_tables () {
         return $this->_dbobj->get_tables($this->_conf['pre'], $this->get_quiet());
@@ -239,7 +195,7 @@ class table extends rgx {
 
     /**
      * 获取 SQL 查询记录
-     * @return [type] [description]
+     * @return array
      */
     public function get_sqls () {
         return $this->_dbobj->get_sql();
@@ -247,18 +203,16 @@ class table extends rgx {
 
     /**
      * 设置 _reset
-     *
-     * @param unknown_type $bool
+     * @param boolean $bool
+     * @return \re\rgx\table
      */
     public function reset ($bool = false) {
         $this->_reset = (bool) $bool;
         return $this;
     }
 
-
     /**
-     * 获取字段信息
-     *
+     * 获取字段列表
      * @return array
      */
     public function get_fields () {
@@ -266,27 +220,21 @@ class table extends rgx {
     }
 
     /**
-     * where
-     * @param  [type] $condition 条件语句
-     * @param  [type] $logic_op
-     * @return [type]
+     * where 操作
+     * @param mixed $condition
+     * @throws exception
+     * @return \re\rgx\table
      */
-    public function where ($condition, $logic_op = self::LOGIC_AND) {
+    public function where ($condition) {
         if (!empty($condition) && is_array($condition)) {
-            $is_not = false;
-            if (($logic_op & ~self::LOGIC_AND) & ($logic_op & ~self::LOGIC_OR)) {
-                $is_not = true;
-                $logic_op = ~$logic_op;
-            }
-            $is_and = $logic_op & self::LOGIC_AND;
-
             foreach ((array)$condition as $k => $v) {
                 if (is_array($v)) {
-                    if ($this->_fields[$k]['type'] == 'int' || $this->_fields[$k]['type'] == 'float') {
-                        $tmp[] = "{$k} " . ($is_not ? 'not' : '') . " in (" . join(', ', $v) . ")";
+                    if ($this->_fields[$k]['type'] == 'int' || 
+                            $this->_fields[$k]['type'] == 'float') {
+                        $tmp[] = "{$k} IN (" . join(', ', $v) . ")";
                     }
                     else {
-                        $tmp[] = "{$k} " . ($is_not ? 'not' : '') . " in (" . join(', ', array_map(function ($value) {
+                        $tmp[] = "{$k} IN (" . join(', ', array_map(function ($value) {
                             return "'{$value}'";
                         }, $v)) . ")";
                     }
@@ -308,15 +256,16 @@ class table extends rgx {
                 }
                 // 'id' => 1
                 else {
-                    if ($this->_fields[$k]['type'] == 'int' || $this->_fields[$k]['type'] == 'float') {
-                        $tmp[] = "{$k} " . ($is_not ? '!=' : '=') . " {$v}";
+                    if ($this->_fields[$k]['type'] == 'int' || 
+                            $this->_fields[$k]['type'] == 'float') {
+                        $tmp[] = "{$k} = {$v}";
                     }
                     else {
-                        $tmp[] = "{$k} " . ($is_not ? '!=' : '=') . " '{$v}'";
+                        $tmp[] = "{$k} = '{$v}'";
                     }
                 }
             }
-            $this->_sql['where'][] = join($is_and ? ' and ' : ' or ', $tmp);
+            $this->_sql['where'][] = join(' AND ');
         }
         else {
             $this->_sql['where'][] = $condition;
@@ -325,28 +274,30 @@ class table extends rgx {
     }
 
     /**
-     * set 字段值
-     *
-     * @param unknown_type $k
-     * @param unknown_type $v
+     * set 操作
+     * @param string $k
+     * @param string $v
+     * @throws exception
+     * @return \re\rgx\table
      */
     public function set ($k, $v = null) {
         $k = is_array($k) ? $k : [$k => $v];
         foreach ($k as $field => $value) {
             // 检测字段是否存在
             if (!isset($this->_fields[$field])) {
-                throw new exception(LANG('not exists', "field {$this->_conf['table_name']}.{$field}"), exception::NOT_EXISTS);
+                throw new exception(LANG('not exists', 
+                    "field {$this->_conf['table_name']}.{$field}"), exception::NOT_EXISTS);
             }
-            $this->data[$field] = is_callable($value) ? $value : addslashes(stripslashes($value));
+            $this->data[$field] = is_callable($value) ? 
+                    $value : addslashes(stripslashes($value));
         }
         return $this;
     }
 
     /**
-     * limit
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 设置返回条数
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function limit ($str) {
         $str = trim($str);
@@ -358,10 +309,9 @@ class table extends rgx {
     }
 
     /**
-     * union limit
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 设置联合查询返回条数
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function ulimit ($str) {
         $str = trim($str);
@@ -376,6 +326,7 @@ class table extends rgx {
      * 结果集处理回调设置
      * @param unknown $callback
      * @throws exception
+     * @return \re\rgx\table
      */
     public function map ($callback) {
         if (!is_callable($callback)) {
@@ -387,7 +338,8 @@ class table extends rgx {
 
     /**
      * 获取一条记录
-     *
+     * @param array $where
+     * @throws exception
      * @return unknown
      */
     public function get ($where = []) {
@@ -408,11 +360,14 @@ class table extends rgx {
         return $ret;
     }
 
-
     /**
-     * 获取一条记录
-     *
-     * @return unknown
+     * 获取单条记录
+     * @example get_row("select * from %s where %s = 1", [
+     *  user_table, id
+     * ])
+     * @param string $sql
+     * @param array $param
+     * @return array
      */
     public function get_row ($sql = null, $param = array()) {
         if (!empty($sql) && is_array($sql)) {
@@ -428,10 +383,11 @@ class table extends rgx {
 
     /**
      * 获取数据集合
-     *
-     * @return unknown
+     * @param string $sql
+     * @param array $param
+     * @return array
      */
-    public function get_all ($sql = null, $param = array()) {
+    public function get_all ($sql = null, $param = []) {
         if (!empty($sql) && is_array($sql)) {
             $this->where($sql);
             $sql = null;
@@ -444,27 +400,30 @@ class table extends rgx {
     }
 
     /**
-     * 执行sql
-     *
-     * @return unknown
+     * 执行 SQL
+     * @param string $sql
+     * @param array $param
+     * @return resource
      */
-    public function exec ($sql, $param = array()) {
+    public function exec ($sql, $param = []) {
         return $this->_dbobj->query($this->_format($sql, $param), $this->get_quiet());
     }
 
     /**
-     * 执行 unbuf sql
-     *
-     * @return unknown
+     * 执行 unbuffquery 查询
+     * @param string $sql
+     * @param array $param
+     * @return resource
      */
     public function unbufquery ($sql, $param = array()) {
         return $this->_dbobj->unbufquery($this->_format($sql, $param), $this->get_quiet());
     }
 
     /**
-     * 格式化sql
-     *
-     * @return unknown
+     * 格式化生成SQL
+     * @param string $sql
+     * @param array $param
+     * @return resource
      */
     private function _format ($sql, $param = array()) {
         $sql = preg_replace('/(\w+?)_table/i', $this->_conf['pre'] . '\\1', $sql);
@@ -482,9 +441,9 @@ class table extends rgx {
     }
 
     /**
-     * 输出sql
-     *
-     * @param unknown_type $sql
+     * 获取SQL字串
+     * @param string $act
+     * @return string
      */
     public function get_sql ($act = 'select') {
         if ($this->_error_msg) {
@@ -494,40 +453,27 @@ class table extends rgx {
     }
 
     /**
-     * 事务
-     * @param  array  $sql_list [description]
-     * @return [type]           [description]
+     * 执行事务
+     * @param array $sql_list
+     * @return boolean
      */
     public function transaction ($sql_list = []) {
         return $this->_dbobj->transaction(array_map([$this, '_format'], $sql_list));
     }
 
     /**
-     * sql 优先级
-     *
-     * @param unknown_type $pri
-     */
-    public function priority ($pri = self::SQL_HIGH) {
-        $this->_sql['priority'] = $pri;
-        return $this;
-    }
-
-    /**
      * 设置返回数据数组的索引键
-     *
-     * @param unknown_type $k
-     * @return unknown
+     * @param string $k
+     * @return \re\rgx\table
      */
     public function akey ($k = null) {
         $this->_akey = empty($k) ? (!is_array($this->_primary_key['key']) ? $this->_primary_key['key'] : null) : $k;
         return $this;
     }
 
-
     /**
-     * 返回数据数组的索引键
-     *
-     * @return unknown
+     * 返回结果集数组元素的索引键
+     * @return string
      */
     private function get_akey () {
         $akey = $this->_akey;
@@ -536,49 +482,46 @@ class table extends rgx {
     }
 
     /**
-     * union all
-     *
-     * @param tab $obj
-     * @return mixed
+     * 联合查询
+     * @param \re\rgx\table $obj
+     * @return array
      */
     public function union_all ($obj) {
         return $this->union($obj, 1);
     }
 
     /**
-     * union distinct
-     *
-     * @param unknown_type $obj
-     * @return unknown
+     * 去重联合
+     * @param \re\rgx\table $obj
+     * @return array
      */
     public function union_distinct ($obj) {
         return $this->union($obj, 2);
     }
 
     /**
-     * union
-     *
-     * @param tab $obj
-     * @param boolean $all
-     * @return mixed
+     * 联合查询
+     * @param \re\rgx\table $obj
+     * @param string $ctype
+     * @return array
      */
     public function union ($obj = null, $ctype = false) {
         if (!empty($obj)) {
             if (!is_array($obj)) {
                 $obj = [$obj];
             }
-            $ctype = $ctype ? ($ctype == '1' ? 'all' : 'distinct') : '';
+            $ctype = $ctype ? ($ctype == '1' ? 'ALL' : 'DISTINCT') : '';
             $sql = '( ' . $this->parse_sql('select') . ') ';
             foreach ($obj as $v) {
-                $sql .= ' union ' . $ctype . '  ( ' . $v->parse_sql('select') . ' ) ';
+                $sql .= ' UNION ' . $ctype . '  ( ' . $v->parse_sql('select') . ' ) ';
             }
             // order
             if (!empty($this->_sql['uorder'])) {
-                $sql .= ' order by ' . implode(' , ', $this->_sql['uorder']);
+                $sql .= ' ORDER BY ' . implode(' , ', $this->_sql['uorder']);
             }
             // limit
             if (!empty($this->_sql['ulimit'])) {
-                $sql .= ' limit  ' . implode(' , ', $this->_sql['ulimit']);
+                $sql .= ' LIMIT  ' . implode(' , ', $this->_sql['ulimit']);
             }
             $this->_sql = [];
 
@@ -593,8 +536,8 @@ class table extends rgx {
 
     /**
      * 解析 where
-     * @param  array  $where [description]
-     * @return [type]        [description]
+     * @param array $where
+     * @return string
      */
     protected function parse_where ($where = []) {
         $ret = [];
@@ -649,14 +592,14 @@ class table extends rgx {
             }
             $ret[] = $str;
         }
-        return $ret ? (' and (' . join(') and (' , $ret) . ') ') : ' ';
+        return $ret ? (' AND (' . join(') AND (' , $ret) . ') ') : ' ';
     }
-
 
     /**
      * 解析sql
-     *
-     * @return unknown
+     * @param string $act
+     * @throws exception
+     * @return string
      */
     protected function parse_sql ($act = false) {
         $sep = RUN_MODE == 'debug' ? " \n" : ' ';
@@ -666,11 +609,6 @@ class table extends rgx {
 
         // select
         if ($this->_sql['act'] == 'select') {
-            // priority
-            if (isset($this->_sql['priority']) &&
-                     $this->_sql['priority'] == self::SQL_HIGH) {
-                $sql .= $this->_sql['priority'] . ' ';
-            }
             // fields
             if (isset($this->_sql['fields']) && ! empty($this->_sql['fields'])) {
                 $sql .= implode(' , ', $this->_sql['fields']);
@@ -683,7 +621,7 @@ class table extends rgx {
                 $this->_sql['fields'] = null;
             }
 
-            $sql .= 'from ' . $this->_conf['table_name'] . $sep;
+            $sql .= 'FROM ' . $this->_conf['table_name'] . $sep;
 
             // join
             if (! empty($this->_sql['join'])) {
@@ -695,28 +633,28 @@ class table extends rgx {
             $sql .= $sep;
             // where
             if (! empty($this->_sql['where'])) {
-                $sql .= 'where 1 = 1' . $sep . $this->parse_where($this->_sql['where']);
+                $sql .= 'WHERE 1 = 1' . $sep . $this->parse_where($this->_sql['where']);
                 if (!$this->_keep) {
                     $this->_sql['where'] = null;
                 }
             }
             // group
             if (!empty($this->_sql['group'])) {
-                $sql .= 'group by ' . implode(' , ', $this->_sql['group']) . $sep;
+                $sql .= 'GROUP BY ' . implode(' , ', $this->_sql['group']) . $sep;
                 if (! $this->_keep) {
                     $this->_sql['group'] = null;
                 }
             }
             // order
             if (!empty($this->_sql['order'])) {
-                $sql .= 'order by ' . implode(' , ', $this->_sql['order']) . $sep;
+                $sql .= 'ORDER BY ' . implode(' , ', $this->_sql['order']) . $sep;
                 if ($this->_keep) {
                     $this->_sql['order'] = null;
                 }
             }
             // limit
             if (!empty($this->_sql['limit'])) {
-                $sql .= 'limit  ' . implode(' , ', $this->_sql['limit']) . $sep;
+                $sql .= 'LIMIT  ' . implode(' , ', $this->_sql['limit']) . $sep;
                 if ($this->_keep) {
                     $this->_sql['limit'] = null;
                 }
@@ -724,16 +662,11 @@ class table extends rgx {
         }
         // update
         else if ($this->_sql['act'] == 'update') {
-            // priorty
-            if (isset($this->_sql['priority']) &&
-                     $this->_sql['priority'] == self::SQL_LOW) {
-                $sql .= $this->_sql['priority'] . ' ';
-            }
             // ignore
             if (isset($this->_sql['ignore'])) {
-                $sql .= ' ignore ';
+                $sql .= ' IGNORE ';
             }
-            $sql .= $this->_conf['table_name'] . ' set ' . $sep;
+            $sql .= $this->_conf['table_name'] . ' SET ' . $sep;
             // set 数据
             if (!empty($this->data) && is_array($this->data)) {
                 // 是否存在自增主键
@@ -787,16 +720,11 @@ class table extends rgx {
         }
         // insert && replace
         else if ($this->_sql['act'] == 'insert' || $this->_sql['act'] == 'replace') {
-            // insert priority
+            // insert ignore
             if ($this->_sql['act'] == 'insert') {
-                $sql .= (isset($this->_sql['priority']) ? $this->_sql['priority'] : '') . ' ';
                 if (isset($this->_sql['ignore'])) {
-                    $sql .= ' ignore ';
+                    $sql .= ' IGNORE ';
                 }
-            }
-            // replace priority
-            else if (isset($this->_sql['priority']) && $this->_sql['priority'] != self::SQL_HIGH) {
-                $sql .= $this->_sql['priority'] . ' ';
             }
             $sql .= ' into ';
             $sql .= $this->_conf['table_name'] . '( ';
@@ -815,7 +743,7 @@ class table extends rgx {
             $sql .= implode(', ', $vals) . ') ';
             // ODKU
             if ($this->_sql['act'] == 'insert' && !empty($this->_sql['odku'])) {
-                $sql .= ' on duplicate key update ' . $this->_sql['odku'];
+                $sql .= ' ON DUPLICATE KEY UPDATE ' . $this->_sql['odku'];
             }
         }// insert && replace end
 
@@ -842,6 +770,7 @@ class table extends rgx {
 
     /**
      * ignore for insert
+     * @return \re\rgx\table
      */
     public function ignore () {
         $this->_sql['ignore'] = 1;
@@ -850,13 +779,15 @@ class table extends rgx {
 
     /**
      * ON DUPLICATE KEY UPDATE
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function odku ($str) {
         if (is_string($str)) {
             $this->_sql['odku'] = $str;
         }
         else if (is_array($str)) {
-            $tmp = array();
+            $tmp = [];
             foreach ($str as $k => $v) {
                 if (isset($this->_conf['fields']['list'][$k])) {
                     $tmp[] = $k . '=' . "'{$v}'";
@@ -869,7 +800,7 @@ class table extends rgx {
 
     /**
      * 保存
-     * @return boolean
+     * @return unknown
      */
     public function save () {
         $action = 'insert';
@@ -890,11 +821,11 @@ class table extends rgx {
         return $this->$action();
     }
 
-
     /**
-     * 执行sql
-     *
-     * @return unknown
+     * 执行更新
+     * @param string $sql
+     * @param array $param
+     * @return array
      */
     public function update ($sql = null, $param = []) {
         if (!empty($sql) && is_array($sql)) {
@@ -935,11 +866,13 @@ class table extends rgx {
     }
 
     /**
-     * 删除操作
-     *
-     * @return unknown
+     * 执行删除
+     * @param string $sql
+     * @param array $param
+     * @throws exception
+     * @return array
      */
-    public function delete ($sql = null, $param = array()) {
+    public function delete ($sql = null, $param = []) {
         if (is_array($sql)) {
             foreach ((array)$sql as $k => $v) {
                 if (isset($this->_fields[$k])) {
@@ -954,7 +887,7 @@ class table extends rgx {
                                             exception::INVALID_TYPE, 'table');
                                 }
                             }, $v);
-                            $this->where("{$k} in (" . join(',', $v) . ")");
+                            $this->where("{$k} IN (" . join(',', $v) . ")");
                         }
                         else if (!is_numeric($v)) {
                             throw new exception(LANG('invalid data type', "field {$k} => {$v}"), exception::INVALID_TYPE, 'table');
@@ -965,7 +898,7 @@ class table extends rgx {
                     }
                     else if ($this->_fields[$k]['type'] == 'char') {
                         if (is_array($v)) {
-                            $this->where("{$k} in ('" . join("','", $v) . "')");
+                            $this->where("{$k} IN ('" . join("','", $v) . "')");
                         }
                         else {
                             $this->where("{$k} = '{$v}'");
@@ -982,10 +915,9 @@ class table extends rgx {
     }
 
     /**
-     * 静默模式
-     *
-     * @param unknown_type $value
-     * @return unknown
+     * 静默模式开关
+     * @param boolean $value
+     * @return \re\rgx\table
      */
     public function quiet ($value = true) {
         $this->_quiet = $value ? true : false;
@@ -994,8 +926,7 @@ class table extends rgx {
 
     /**
      * 获取静默状态
-     *
-     * @return unknown
+     * @return boolean
      */
     private function get_quiet () {
         $ret = $this->_quiet;
@@ -1004,10 +935,12 @@ class table extends rgx {
     }
 
     /**
-     * 新增
-     * @return boolean
+     * 执行插入操作
+     * @param string $sql
+     * @param array $param
+     * @return array
      */
-    public function insert ($sql = null, $param = array()) {
+    public function insert ($sql = null, $param = []) {
         $ret = [
             'code'      => 1,
             'rows'      => 0,
@@ -1041,14 +974,14 @@ class table extends rgx {
         else {
             $ret = $this->_dbobj->insert($this->_format($sql, $param), $this->get_quiet());
         }
-
         return $ret;
     }
 
     /**
-     * replace 操作
-     *
-     * @return unknown
+     * 执行replace操作
+     * @param string $sql
+     * @param array $param
+     * @return array
      */
     public function replace ($sql = null, $param = []) {
         $ret = [
@@ -1082,27 +1015,26 @@ class table extends rgx {
         else {
             $ret = $this->_dbobj->update($this->_format($sql, $param), $this->get_quiet());
         }
-
         return $ret;
     }
 
     /**
-     * 统计
-     * @param unknown $fields
-     * @param string $mode
+     * 执行统计查询
+     * @param string $fields
+     * @return number
      */
     public function count ($fields = null) {
         // 字段, 对于MySQL应优先使用建立了辅助索引的字段, 需要代码控制.
         if (!empty($fields)) {
-            $this->fields('count( ' . $fields . ' ) as nums');
+            $this->fields('COUNT( ' . $fields . ' ) AS nums');
         }
         // 主键 MySQL Innodb 应避免使用主键统计
         else if (!empty($this->_conf['fields']['prikey'])) {
-            $this->fields('count( ' . $this->_conf['fields']['prikey'] . ' ) as nums');
+            $this->fields('COUNT( ' . $this->_conf['fields']['prikey'] . ' ) AS nums');
         }
         // 常量
         else {
-            $this->fields('count( 1 ) as nums');
+            $this->fields('COUNT( 1 ) AS nums');
         }
 
         return (int)$this->_dbobj->fetch($this->parse_sql('select'), $this->get_quiet(), function () {
@@ -1111,9 +1043,9 @@ class table extends rgx {
     }
 
     /**
-     * 获取单记录的单字段
-     * @param unknown $fields
-     * @param string $mode
+     * 获取查询字段值
+     * @param string $sql
+     * @return mixed
      */
     public function fetch ($sql = null) {
         if (!empty($sql) && is_array($sql)) {
@@ -1125,18 +1057,20 @@ class table extends rgx {
 
     /**
      * 调用存储过程或函数
-     * @param unknown $fields
-     * @param string $mode
+     * @param string $func
+     * @throws Exception
+     * @return resource
      */
     public function call ($func) {
         if (empty($func) || !is_string($func)) {
             throw new Exception(LANG('invalid name of procedure or function', $func), exception::INVALID_TYPE, true);
         }
-        return $this->_dbobj->call("call {$func}");
+        return $this->_dbobj->call("CALL {$func}");
     }
 
     /**
-     * 保存本次sql值
+     * 设置保持本次查询条件
+     * @return \re\rgx\table
      */
     public function keep () {
         $this->_keep = true;
@@ -1151,14 +1085,14 @@ class table extends rgx {
      *         return " > 10";
      *     }
      * ])
-     * @param unknown_type $ctype
-     * @param unknown_type $tab
-     * @param unknown_type $key
-     * @param unknown_type $fkey
-     * @param unknown_type $iseq
-     * @return tab
+     * @param string $ctype
+     * @param \re\rgx\table $tab
+     * @param string $key
+     * @param string $fkey
+     * @param boolean $iseq
+     * @return \re\rgx\table
      */
-    private function join ($ctype = 'left', $tab, $key, $fkey = null, $iseq = true) {
+    private function join ($ctype = 'left', $tab, $key, $fkey = null) {
         if (!isset($this->_sql['tabs'])) {
             $this->_sql['tabs'] = [];
         }
@@ -1188,53 +1122,51 @@ class table extends rgx {
                     $exprs[] = "{$k} = {$v}";
                 }
             }
-            $str = $ctype . " join " . $this->table($tab) . " " . (empty($alias) ? '' : "as $alias ")
-                    . ' on ( ' . join(' and ', $exprs) . ' )';
+            $str = $ctype . " JOIN " . $this->table($tab) . " " . 
+                        (empty($alias) ? '' : "AS $alias ") . 
+                        ' ON ( ' . join(' AND ', $exprs) . ' )';
             $this->_sql['join'][] = $str;
         }
         return $this;
     }
 
     /**
-     * left join
-     *
-     * @param unknown_type $tab
-     * @param unknown_type $key
-     * @param unknown_type $fkey
-     * @param boolean $iseq
+     * left join 查询
+     * @param \re\rgx\table $tab
+     * @param string $key
+     * @param string $fkey
+     * @return \re\rgx\table
      */
-    public function left_join ($tab, $key, $fkey = null, $iseq = true) {
-        return $this->join('left', $tab, $key, $fkey, $iseq);
+    public function left_join ($tab, $key, $fkey = null) {
+        return $this->join('left', $tab, $key, $fkey);
+    }
+    
+    /**
+     * right join 查询
+     * @param \re\rgx\table $tab
+     * @param string $key
+     * @param string $fkey
+     * @return \re\rgx\table
+     */
+    public function right_join ($tab, $key, $fkey = null) {
+        return $this->join('right', $tab, $key, $fkey);
+    }
+    
+    /**
+     * inner join 查询
+     * @param \re\rgx\table $tab
+     * @param string $key
+     * @param string $fkey
+     * @return \re\rgx\table
+     */
+    public function inner_join ($tab, $key, $fkey = null) {
+        return $this->join('inner', $tab, $key, $fkey);
     }
 
     /**
-     * right join
-     *
-     * @param unknown_type $tab
-     * @param unknown_type $key
-     * @param unknown_type $fkey
-     * @param boolean $iseq
-     */
-    public function right_join ($tab, $key, $fkey = null, $iseq = true) {
-        return $this->join('right', $tab, $key, $fkey, $iseq);
-    }
-
-    /**
-     * inner join
-     *
-     * @param unknown_type $tab
-     * @param unknown_type $key
-     * @param unknown_type $fkey
-     */
-    public function inner_join ($tab, $key, $fkey, $iseq = true) {
-        return $this->join('inner', $tab, $key, $fkey, $iseq = true);
-    }
-
-    /**
-     * Order By
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 排序 ORDER BY
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function order ($str) {
         $str = trim($str);
@@ -1272,9 +1204,8 @@ class table extends rgx {
 
     /**
      * union order
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function uorder ($str) {
         $str = trim($str);
@@ -1297,9 +1228,8 @@ class table extends rgx {
 
     /**
      * Group By
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return \re\rgx\table
      */
     public function group ($str) {
         $str = trim($str);
@@ -1314,8 +1244,9 @@ class table extends rgx {
 
     /**
      * 设置不获取的字段
-     * @param  [type] $fields [description]
-     * @return [type]         [description]
+     * @param mixed $fields
+     * @throws exception
+     * @return \re\rgx\table
      */
     public function except ($fields) {
         $sets = $this->_fields;
@@ -1338,15 +1269,13 @@ class table extends rgx {
     }
 
     /**
-     * 设置查询字段
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 设置查询获取的字段
+     * @param mixed $str
+     * @return \re\rgx\table
      */
     public function fields ($str) {
         $tmp = is_array($str) ? $str : explode(',', trim(strtolower($str)));
         foreach ($tmp as $v) {
-
             if (strpos($v, '(') !== false) {
                 $this->_sql['fields'][] = $v;
             }
@@ -1360,17 +1289,17 @@ class table extends rgx {
                     // distinct
                     if (($pos = strpos($matchs[2], 'distinct')) === false) {
                         $this->_sql['fields'][] = $matchs[1] . '( ' .
-                                 $this->escape($matchs[2]) . ' ) as ' . trim(($temp[1]));
+                                 $this->escape($matchs[2]) . ' ) AS ' . trim(($temp[1]));
                     }
                     else {
                         $keyword = substr($matchs[2], 0, $pos + 8);
                         $field = substr($matchs[2], $pos + 8 - strlen($matchs[2]));
                         $this->_sql['fields'][] = $matchs[1] . '( ' . $keyword . ' ' .
-                                 $this->escape($field) . ' ) as ' . trim(($temp[1]));
+                                 $this->escape($field) . ' ) AS ' . trim(($temp[1]));
                     }
                 }
                 else {
-                    $this->_sql['fields'][] = $this->escape($temp[0]) . ' as ' .
+                    $this->_sql['fields'][] = $this->escape($temp[0]) . ' AS ' .
                              trim(($temp[1]));
                 }
             }
@@ -1383,9 +1312,8 @@ class table extends rgx {
 
     /**
      * 字段转义
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return string
      */
     public function escape ($str) {
         $ret = $str = strtolower(trim($str));
@@ -1400,10 +1328,10 @@ class table extends rgx {
         // info_tab.id as iid
         else if (strpos($str, '.') !== false) {
             $tmp = explode('.', $str);
-            if (strpos($str, ' as ') !== false) {
-                $temp = explode(' as ', str_replace($tmp[0] . '.', '', $str));
+            if (strpos($str, ' AS ') !== false) {
+                $temp = explode(' AS ', str_replace($tmp[0] . '.', '', $str));
                 $ret = $this->table($tmp[0]) . '.`' . trim($temp[0]) .
-                        '` as `' . trim($temp[1]) . '`';
+                        '` AS `' . trim($temp[1]) . '`';
             }
             else {
                 if (trim($tmp[1]) == '*') {
@@ -1427,9 +1355,8 @@ class table extends rgx {
 
     /**
      * 加载表单数据至当前对象data属性
-     *
-     * @param unknown_type $var
-     * @return unknown
+     * @param string $var
+     * @return mixed
      */
     public function load ($var = null) {
         $this->_isload = true;
@@ -1469,9 +1396,9 @@ class table extends rgx {
 
     /**
      * 执行字段验证
-     * @param  [type] $data  [description]
-     * @param  [type] $field [description]
-     * @return [type]        [description]
+     * @param string $data
+     * @param string $field
+     * @return array
      */
     private function _exec_validate ($data, $field) {
         $ret = [
@@ -1559,24 +1486,26 @@ class table extends rgx {
         return $ret;
     }
 
-
     /**
      * 判断是否为主键
-     * @param  [type]  $key [description]
-     * @return boolean      [description]
+     * @param string $key
+     * @param string $check_inc
+     * @return boolean
      */
     private function _is_primary_key ($key, $check_inc = false) {
         $ret = false;
         if (!empty($this->_primary_key['key']) && !is_array($this->_primary_key['key'])) {
-            $ret = $key == $this->_primary_key['key'] && ($check_inc ? $this->_primary_key['inc'] : true);
+            $ret = $key == $this->_primary_key['key'] && 
+                    ($check_inc ? $this->_primary_key['inc'] : true);
         }
         return $ret;
     }
 
     /**
      * 数据验证
-     *
-     * @return unknown
+     * @param number $op_action
+     * @throws exception
+     * @return boolean
      */
     private function _validate ($op_action = self::OP_INSERT) {
         // 重置错误消息数组
@@ -1696,9 +1625,9 @@ class table extends rgx {
 
     /**
      * 执行唯一性约束验证
-     * @param  array  $fields    [description]
-     * @param  [type] $op_action [description]
-     * @return [type]            [description]
+     * @param array $fields
+     * @param number $op_action
+     * @throws exception
      */
     private function _exec_unique_check ($fields = [], $op_action = self::OP_INSERT) {
         $tab = $this->get_mirror();
@@ -1722,15 +1651,17 @@ class table extends rgx {
                 $tab->where($where);
                 $pri_key = $this->_primary_key['key'];
                 if (!is_string($pri_key)) {
-                    throw new exception(LANG('does not support', LANG('unique index validate', $this->get_name())),
-                             exception::NOT_SUPPORT, 'table');
+                    throw new exception(LANG('does not support', 
+                                LANG('unique index validate', $this->get_name())),
+                                exception::NOT_SUPPORT, 'table');
                 }
                 if (isset($this->data[$pri_key]) && $this->data[$pri_key]) {
                     $tab->where("{$pri_key} != {$this->data[$pri_key]}");
                 }
                 if ($tab->count()) {
                     $this->_error_msg[$fields[0]] = isset($this->unique_msg[join('-', $fields)]) ?
-                            $this->unique_msg[join('-', $fields)] : LANG('duplicate entry not allow', join(' - ', $fields_name));
+                            $this->unique_msg[join('-', $fields)] : 
+                            LANG('duplicate entry not allow', join(' - ', $fields_name));
                 }
             }
         }
@@ -1738,9 +1669,8 @@ class table extends rgx {
 
     /**
      * 根据类名获取表名
-     *
-     * @param unknown_type $class
-     * @return unknown
+     * @param string $class
+     * @return mixed
      */
     public function table ($class) {
         return preg_replace('/(\w+?)_table/i', '`' . $this->_conf['pre'] . '\\1' . '`',
@@ -1748,10 +1678,9 @@ class table extends rgx {
     }
 
     /**
-     * 清除sql条件
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 清除指定的sql条件
+     * @param string $key
+     * @return \re\rgx\table
      */
     public function clear ($key) {
         if (isset($this->_sql[$key])) {
@@ -1763,8 +1692,7 @@ class table extends rgx {
 
     /**
      * 获取错误消息
-     *
-     * @return unknown
+     * @return array
      */
     public function get_error () {
         $error_msg = $this->_error_msg;
@@ -1774,8 +1702,7 @@ class table extends rgx {
 
     /**
      * 获取第一条错误消息
-     *
-     * @return unknown
+     * @return array
      */
     public function get_first_error () {
         $error_msg = $this->_error_msg;
@@ -1785,8 +1712,8 @@ class table extends rgx {
 
     /**
      * 获取错误文本
-     *
-     * @return unknown
+     * @param number $limit
+     * @return string
      */
     public function get_error_desc ($limit = 1) {
         $error_msg = $this->_error_msg;
@@ -1796,7 +1723,7 @@ class table extends rgx {
 
     /**
      * 镜像分身
-     * @return [type] [description]
+     * @return \re\rgx\table
      */
     public function get_mirror () {
         return clone $this;

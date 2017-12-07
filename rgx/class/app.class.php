@@ -3,43 +3,42 @@ namespace re\rgx;
 /**
  * app 基类
  * @author reginx
- *
  */
 class app extends rgx {
     
     /**
-     * 模块对象
-     * @var unknown
+     * 模块操作实例
+     * @var \re\rgx\module
      */
     private static $_mod = null;
 
     /**
-     * 模板操作对象
-     * @var unknown
+     * 模板操作实例
+     * @var \re\rgx\template
      */
     private static $_tpl = null;
 
     /**
-     * 缓存操作对象
-     * @var unknown
+     * 缓存操作实例
+     * @var \re\rgx\cache
      */
     private static $_cache = null;
 
     /**
-     * 数据库操作对象
-     * @var unknown
+     * 数据库操作实例
+     * @var \re\rgx\database
      */
     private static $_db = null;
     
     /**
-     * 日志操作对象
-     * @var unknown
+     * 日志操作实例
+     * @var \re\rgx\log
      */
     private static $_log = null;
     
     /**
-     * 会话操作对象
-     * @var unknown
+     * 会话操作实例
+     * @var \re\rgx\sess
      */
     private static $_sess = null;
     
@@ -75,7 +74,7 @@ class app extends rgx {
 
             // 404
             if(!method_exists(self::$_mod, $act_method) && !method_exists(self::$_mod, '__call')) {
-                self::$_mod->show404(LANG('not exists', "{$mod_class}::{$act_method}"));
+                self::$_mod->show_404(LANG('not exists', "{$mod_class}::{$act_method}"));
             }
             else {
                 self::$_mod->$act_method();
@@ -85,8 +84,7 @@ class app extends rgx {
     
     /**
      * 获取数据库操作实例
-     * @DateTime 2017-12-07T10:55:27+0800
-     * @return   re\rgx\database
+     * @return \re\rgx\database
      */
     public static function db () {
         if (self::$_db === null) {
@@ -97,6 +95,7 @@ class app extends rgx {
     
     /**
      * 获取模板操作实例
+     * @return \re\rgx\template
      */
     public static function tpl () {
         if (self::$_tpl === null) {
@@ -106,7 +105,8 @@ class app extends rgx {
     }
 
     /**
-     * 获取缓存操作对象
+     * 获取缓存操作实例
+     * @return \re\rgx\cache
      */
     public static function cache () {
         if (self::$_cache === null) {
@@ -116,11 +116,15 @@ class app extends rgx {
     }
 
     /**
-     * 获取缓存操作对象
+     * 获取缓存操作实例
+     * @param string $mod
+     * @param string $callback
+     * @return \re\rgx\log
      */
     public static function log ($mod = 'common', $callback = false) {
         if (self::$_log[$mod] === null) {
-            self::$_log[$mod] = log::get_instance(CFG('log') ?: [], is_callable($callback) ? $callback : function ($obj) use ($mod) {
+            self::$_log[$mod] = log::get_instance(CFG('log') ?: [], 
+                is_callable($callback) ? $callback : function ($obj) use ($mod) {
                 $obj->init($mod);
             });
         }
@@ -128,9 +132,11 @@ class app extends rgx {
     }
     
     /**
-     * 获取sess操作对象
-     * @param unknown $skey
-     * @param unknown $sid
+     * 获取sess操作实例
+     * @param string $skey
+     * @param string $sid
+     * @param array $opts
+     * @return \re\rgx\sess
      */
     public static function sess ($skey = null, $sid = null, $opts = []) {
         if (self::$_sess === null) {
@@ -140,9 +146,9 @@ class app extends rgx {
     }
     
     /**
-     * 自动装载 (*.mod.php, *.lib.php, *.cls.php, *.tab.php)
-     *
-     * @param unknown_type $class
+     * 自动加载
+     * @param string $class
+     * @throws exception
      */
     public final static function loader ($class) {
         $class = str_replace(NS . '\\', '', $class);
@@ -177,11 +183,9 @@ class app extends rgx {
         include ($file);
     }
     
-
     /**
-     * 获取 app url
-     *
-     * @return unknown
+     * 获取 app 访问 url
+     * @return string
      */
     public static function get_url () {
         $app_url = CFG('app_url') ?: getenv('app_url');
@@ -195,9 +199,8 @@ class app extends rgx {
     }
     
     /**
-     * 获取基本 URL (root url)
-     *
-     * @return unknown
+     * 获取 app 站点 url
+     * @return string
      */
     public static function get_base_url () {
         $ret = APP_NAME == 'default' ? APP_URL : (dirname(APP_URL) . '/');
@@ -209,16 +212,16 @@ class app extends rgx {
     }
     
     /**
-     * 获取请求时间
+     * 获取当前时间
+     * @return integer
      */
     public static function get_time () {
         return IS_CLI ? time() : REQUEST_TIME;
     }
     
     /**
-     * 获取 ip
-     *
-     * @return unknown
+     * 获取 IP 地址
+     * @return mixed
      */
     public static function get_ip () {
         if (isset($_SERVER)) {
@@ -235,13 +238,12 @@ class app extends rgx {
         return filter_var(isset($ip) ? $ip : '0.0.0.0', FILTER_VALIDATE_IP);
     }
 
-
     /**
-     * 实例化对象
-     * @param unknown_type $class
-     * @param unknown_type $single
-     * @param unknown_type $extra
-     * @return Ambigous <unknown>|unknown
+     * 获取实例
+     * @param string $class
+     * @param bool   $single
+     * @param mixed  $extra
+     * @return \re\rgx\rgx
      */
     public static function get_instance ($class, $single = true, $extra = null) {
         static $objbus = [];
@@ -265,17 +267,16 @@ class app extends rgx {
     
     /**
      * 判断 模块文件是否存在
-     *
-     * @param unknown_type $module
-     * @return unknown
+     * @param string $name
+     * @param string $module
+     * @return boolean
      */
     public static function module_file_exists ($name, $module = 'module') {
         return file_exists(APP_PATH . $module . DS . $name . ".{$module}.php");
     }
     
-    
     /**
-     * 命令行消息输出
+     * 命令行输出
      * @param unknown $msg
      */
     public static function cli_msg ($msg) {

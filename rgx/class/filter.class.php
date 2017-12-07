@@ -1,16 +1,15 @@
 <?php
 namespace re\rgx;
 /**
- * 数据过滤
- * @copyright reginx.com
- * $Id: filter.class.php 5 2017-07-19 03:44:30Z reginx $
+ * 数据处理类
+ * @author reginx
  */
 class filter extends rgx {
 
     /**
      * 数据验证规则
      *
-     * @var unknown_type
+     * @var array
      */
     public static $rules = [
 
@@ -40,7 +39,7 @@ class filter extends rgx {
 
     /**
      * 类型转换为 string
-     * @param unknown $value
+     * @param string $value
      * @return string
      */
     public static function char ($value) {
@@ -49,42 +48,45 @@ class filter extends rgx {
 
     /**
      * 类型转换为 int
-     * @param unknown $value
+     * @param string $value
      * @return integer
      */
     public static function int ($value) {
         return (int) $value;
     }
-    
+
     /**
      * 类型转换为 float
-     * @param unknown $value
+     * @param string $value
      * @return float
      */
     public static function float ($value) {
         return (float) $value;
     }
-    
-    
+
+    /**
+     * 静态方法 调用不存在的方法
+     * @param unknown $method
+     * @param array $argv
+     * @return NULL
+     */
     public static function __callstatic ($method, $argv = []) {
-        var_dump($method, $argv);
+        return null;
     }
 
     /**
      * 判断是否为 手机号码
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return bool
      */
     public static function is_mobile ($str) {
         return preg_match(self::$rules['mobile'], $str);
     }
 
     /**
-     * 检测是否是个有效的正浮点值
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 检测是否是个有效的正浮点数
+     * @param string $str
+     * @return boolean
      */
     public static function is_positive_float ($str) {
         if (preg_match(self::$rules['currency'], $str)) {
@@ -95,9 +97,8 @@ class filter extends rgx {
 
     /**
      * 检测是否是个有效的价格值
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return boolean
      */
     public static function is_positive_price ($str) {
         if (preg_match(self::$rules['currency'], $str)) {
@@ -106,12 +107,10 @@ class filter extends rgx {
         return false;
     }
 
-
     /**
      * 检测是否是个有效的正整数值
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return boolean
      */
     public static function is_positive_int ($str) {
         if (preg_match(self::$rules['number'], $str)) {
@@ -121,10 +120,9 @@ class filter extends rgx {
     }
 
     /**
-     * 获取 正则表达式
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 获取正则表达式
+     * @param string $str
+     * @return mixed
      */
     public static function regexp ($str) {
         return filter_var($str, FILTER_VALIDATE_REGEXP);
@@ -132,19 +130,17 @@ class filter extends rgx {
 
     /**
      * 获取 url
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return mixed
      */
     public static function url ($str) {
         return filter_var($str, FILTER_VALIDATE_URL);
     }
 
     /**
-     * 获取 IP
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 获取 ip
+     * @param string $str
+     * @return mixed
      */
     public static function ip ($str) {
         return filter_var($str, FILTER_VALIDATE_IP);
@@ -152,29 +148,26 @@ class filter extends rgx {
 
     /**
      * 获取 Email
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return mixed
      */
     public static function email ($str) {
         return filter_var($str, FILTER_VALIDATE_EMAIL);
     }
 
     /**
-     * 原始内容
-     *
-     * @param unknown_type $str
+     * 获取原始内容
+     * @param string $str
      * @return unknown
      */
     public static function source ($str) {
         return $str;
     }
 
-
     /**
-     * 获取安全文本
-     *
-     * @param unknown_type $str
+     * 获取安全字串
+     * @param string $str
+     * @return string
      */
     public static function text ($str) {
         $str = trim($str);
@@ -187,9 +180,9 @@ class filter extends rgx {
     }
 
     /**
-     * 过滤html标签
-     *
-     * @param unknown_type $str
+     * 过滤HTML标签
+     * @param string $str
+     * @return string|mixed
      */
     public static function rmtags ($str) {
         if (empty($str) && !is_string($str)) {
@@ -205,8 +198,9 @@ class filter extends rgx {
 
     /**
      * 去除指定的html标签
-     *
-     * @param unknown_type $str
+     * @param string $str
+     * @param string $tags
+     * @return string
      */
     public static function cleartags ($str, $tags = 'div,ul,li,embed,span,a') {
         $str = htmlspecialchars_decode($str, ENT_HTML_QUOTE_SINGLE);
@@ -222,9 +216,8 @@ class filter extends rgx {
 
     /**
      * 默认html过滤
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return mixed
      */
     public static function html ($str) {
         $str = htmlspecialchars_decode($str, ENT_HTML_QUOTE_SINGLE);
@@ -237,43 +230,36 @@ class filter extends rgx {
 
     /**
      * 默认过滤
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return string
      */
     public static function normal ($str) {
         return htmlspecialchars(self::rmtags($str), ENT_HTML_QUOTE_SINGLE, 'utf-8');
     }
 
-
     /**
      * 转换成时间戳
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return number
      */
     public static function timestamp ($str) {
-        if (!is_numeric($str) && ($str = strtotime($str)) === false) {
-            $str = 0;
-        }
-        return $str;
+        return strtotime($str) ?: 0;
     }
 
     /**
-     * 原始数据
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 解码转换为 HTML
+     * @param string $str
+     * @return string
      */
     public static function code ($str) {
-        return htmlspecialchars(htmlspecialchars_decode(trim($str)), ENT_HTML_QUOTE_SINGLE, 'utf-8');
+        return htmlspecialchars(htmlspecialchars_decode(trim($str)), 
+            ENT_HTML_QUOTE_SINGLE, 'utf-8');
     }
 
     /**
      * 是否是合法的账号格式 (支持邮箱, 中文, 英文,数字等非特殊字符组合)
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * @param string $str
+     * @return boolean
      */
     public static function is_account ($str) {
         return !preg_match(
@@ -282,10 +268,9 @@ class filter extends rgx {
     }
 
     /**
-     * 安全过滤
-     *
-     * @param unknown_type $str
-     * @return unknown
+     * 过滤敏感字符
+     * @param unknown $str
+     * @return mixed
      */
     public static function ult ($str) {
         return preg_replace(
@@ -294,20 +279,18 @@ class filter extends rgx {
     }
 
     /**
-     *  内容转义
-     * @param  [type]  $value [description]
-     * @param  boolean $strip [description]
-     * @return [type]         [description]
+     * 转换为json格式
+     * @param string $value
+     * @return string
      */
     public static function json_ecsape ($value) {
         return json_encode($value, JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
     /**
-     *  内容转义
-     * @param  [type]  $value [description]
-     * @param  boolean $strip [description]
-     * @return [type]         [description]
+     * json格式转换为标量
+     * @param string $value
+     * @return mixed
      */
     public static function json_unecsape ($value) {
         return json_decode(str_replace([
@@ -327,8 +310,8 @@ class filter extends rgx {
 
     /**
      * 内容转义
-     * @param  [type] $value [description]
-     * @return [type]        [description]
+     * @param string $value
+     * @return string
      */
     public static function ecsape ($value) {
         if (!is_numeric($value)) {
@@ -338,10 +321,10 @@ class filter extends rgx {
     }
 
     /**
-     *  内容转义
-     * @param  [type]  $value [description]
-     * @param  boolean $strip [description]
-     * @return [type]         [description]
+     * 内容反转义
+     * @param string $value
+     * @param string $strip
+     * @return mixed
      */
     public static function unecsape ($value, $strip = true) {
         if (!is_numeric($value)) {
@@ -355,8 +338,8 @@ class filter extends rgx {
 
     /**
      * 判断是否是一个有效的mysql year列取值 范围  1901 ~ 2155
-     * @param  [type]  $str [description]
-     * @return boolean      [description]
+     * @param string $str
+     * @return boolean
      */
     public static function is_mysql_year ($str) {
         return $str >= 1901 && $str <= 2155;
@@ -364,8 +347,8 @@ class filter extends rgx {
 
     /**
      * 判断是否是mysql列所支持的date格式 1000-01-01 ~ 9999-12-31
-     * @param  [type]  $str [description]
-     * @return boolean      [description]
+     * @param string $str
+     * @return boolean
      */
     public static function is_mysql_date ($str) {
         $ret = false;
@@ -380,8 +363,8 @@ class filter extends rgx {
 
     /**
      * 判断是否是有效的mysql datetime 列取值 (暂时不支持小数位)
-     * @param  [type]  $str [description]
-     * @return boolean      [description]
+     * @param string $str
+     * @return boolean
      */
     public static function is_mysql_datetime ($str) {
         $ret = false;
@@ -397,8 +380,8 @@ class filter extends rgx {
 
     /**
      * 判断是否是有效的mysql timestamp 列取值, 范围 : 1970-01-01 00:00:01 ~ 2038-01-19 03:14:07
-     * @param  [type]  $str [description]
-     * @return boolean      [description]
+     * @param string $str
+     * @return boolean
      */
     public static function is_mysql_timestamp ($str) {
         $ret = false;
@@ -415,8 +398,8 @@ class filter extends rgx {
 
     /**
      * 是否是有效的mysql time 列取值 -838:59:59 ~ 838:59:59
-     * @param  [type]  $str [description]
-     * @return boolean      [description]
+     * @param string $str
+     * @return boolean
      */
     public static function is_mysql_time ($str) {
         $ret = false;
@@ -425,12 +408,4 @@ class filter extends rgx {
         }
         return $ret;
     }
-
-}
-
-/**
- * 兼容处理
- */
-if (!defined('ENT_HTML_QUOTE_SINGLE')) {
-    define('ENT_HTML_QUOTE_SINGLE', 1);
 }

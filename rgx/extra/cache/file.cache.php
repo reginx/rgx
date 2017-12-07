@@ -2,30 +2,28 @@
 namespace re\rgx;
 /**
  * 文件缓存驱动类
- * @copyright reginx.com
- * $Id: file.cache.php 5 2017-07-19 03:44:30Z reginx $
+ * @author reginx
  */
 class file_cache extends cache {
     
     /**
-     * 键 前缀
-     *
-     * @var unknown_type
+     * 前缀
+     * @var string
      */
     private $_pre = 'RGX_';
     
     /**
      * 缓存路径
-     * @var [type]
+     * @var string
      */
     private $_dir = CACHE_PATH;
     
     /**
-     * 架构函数
-     *
-     * @param unknown_type $conf
+     * 架构方法
+     * @param array $conf
+     * @param array $extra
      */
-    public function __construct ($conf = array(), $extra = []) {
+    public function __construct ($conf = [], $extra = []) {
         $this->_pre = CFG('cache.pre') ?: 'RGX_';
         $this->_dir = $this->_dir . $extra['name'] . '_' . $extra['id'] . DS;
         if (!is_dir($this->_dir)) {
@@ -35,9 +33,8 @@ class file_cache extends cache {
     
     /**
      * 获取缓存文件
-     *
-     * @param String $key
-     * @return String
+     * @param unknown $key
+     * @return string
      */
     private function _getdatafile ($key) {
         $dir = $this->_getdir($key);
@@ -49,9 +46,9 @@ class file_cache extends cache {
     
     /**
      * 获取Key对应的散列值作为文件名
-     *
-     * @param String $key
-     * @return Integer
+     * @param string $key
+     * @throws exception
+     * @return string
      */
     private function _getfilename ($key) {
         if (empty($key)) {
@@ -62,9 +59,8 @@ class file_cache extends cache {
     
     /**
      * 计算目录名
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * @param string $key
+     * @return string
      */
     private function _getdir ($key) {
         $dir = 'default';
@@ -76,9 +72,8 @@ class file_cache extends cache {
     
     /**
      * 获取缓存统计
-     *
-     * @param unknown_type $path
-     * @param unknown_type $ret
+     * @param string $path
+     * @param ref $ret
      */
     private function _getfilestat ($path = null , &$ret) {
         if(empty($ret)){
@@ -101,6 +96,8 @@ class file_cache extends cache {
     
     /**
      * 统计
+     * {@inheritDoc}
+     * @see \re\rgx\cache::stat()
      */
     public function stat () {
         $ret   = $stat  = array();
@@ -112,7 +109,7 @@ class file_cache extends cache {
             $this->set('rex@filecachestat' , $stat , 600);
         }
         $ret[] = array(LANG('cache type'), 'File');
-        $ret[] = array(LANG('cache directory') , core::relpath(realpath(CACHE_PATH)));
+        $ret[] = array(LANG('cache directory') , misc::relpath(realpath(CACHE_PATH)));
         $ret[] = array(LANG('cache entries') , $stat['nums']);
         $ret[] = array(LANG('cache size') , sprintf('%.2f K' , $stat['total']  / 1024));
         return $ret;
@@ -120,8 +117,8 @@ class file_cache extends cache {
 
     /**
      * 获取缓存
-     *
-     * @param String $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::get()
      */
     public function get($key) {
         $this->count('r');
@@ -134,10 +131,8 @@ class file_cache extends cache {
 
     /**
      * 设置缓存
-     *
-     * @param String $key
-     * @param Mixed $value
-     * @param Integer $ttl
+     * {@inheritDoc}
+     * @see \re\rgx\cache::set()
      */
     public function set ($key, $value, $ttl = 0) {
         $this->count('w');
@@ -151,7 +146,8 @@ class file_cache extends cache {
 
         // 过期设置
         if ($ttl > 1) {
-            $data .= PHP_EOL . 'if (' . (REQUEST_TIME + $ttl) . ' < REQUEST_TIME) return false;' . PHP_EOL;
+            $data .= PHP_EOL . 'if (' . (REQUEST_TIME + $ttl) . 
+                        ' < REQUEST_TIME) return false;' . PHP_EOL;
         }
         $data .= "return " . var_export($value, true) . ";";
 
@@ -160,8 +156,8 @@ class file_cache extends cache {
 
     /**
      * 删除指定缓存
-     *
-     * @param String $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::del()
      */
     public function del ($key) {
         $file = $this->_getdatafile($key);
@@ -172,6 +168,8 @@ class file_cache extends cache {
     
     /**
      * 批量清除缓存
+     * {@inheritDoc}
+     * @see \re\rgx\cache::flush()
      */
     public function flush ($group = null) {
         if (empty($group)) {

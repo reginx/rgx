@@ -1,17 +1,14 @@
 <?php
-/**
- * 模板标签处理
- * @copyright reginx.com
- * $Id: template.class.php 206 2017-08-15 08:27:17Z fangwei $
- */
 namespace re\rgx;
-
+/**
+ * 模板解析处理类
+ * @author reginx
+ */
 class template extends rgx {
 
     /**
      * 配置
-     *
-     * @var unknown_type
+     * @var array
      */
     private $_conf = [
         'ob'        => true,
@@ -27,25 +24,22 @@ class template extends rgx {
 
     /**
      * 数据变量
-     *
-     * @var unknown_type
+     * @var array
      */
     private $_vars = [];
 
     /**
      * 当前模板原文件
-     *
-     * @var unknown_type
+     * @var string
      */
     private $_ctplfile = 'unkown';
 
     /**
-     * 获取但单例模板引擎对象
-     *
+     * 获取单例模板引擎对象
      * @param array $conf
-     * @return object
+     * @return \re\rgx\template
      */
-    public static function get_instance ($conf = array()) {
+    public static function get_instance ($conf = []) {
         static $tplobj = null;
         if (empty($tplobj)) {
             $tplobj = new template($conf);
@@ -54,21 +48,20 @@ class template extends rgx {
     }
 
     /**
-     * 删除临时文件
-     *
-     * @param unknown_type $app
-     * @return unknown
+     * 清除当前app解析生成的临时文件
+     * @param array $app
+     * @return number
      */
     public static function flush ($app = []) {
-        return misc::rmrf(TEMP_PATH . ($app['name'] ?: APP_NAME) . '_' . ($app['id'] ?: APP_ID));
+        return misc::rmrf(TEMP_PATH . ($app['name'] ?: APP_NAME) . '_' .
+                ($app['id'] ?: APP_ID));
     }
 
     /**
-     * 架构函数
-     *
+     * 架构方法
      * @param array $conf
      */
-    private function __construct ($conf = array()) {
+    private function __construct ($conf = []) {
         if (!empty($conf)) {
             $this->_conf = array_merge($this->_conf, $conf);
         }
@@ -86,15 +79,13 @@ class template extends rgx {
         else {
             $this->_conf['tpl_dir'] = TPL_PATH;
         }
-
         plugin::notify('TPL_INIT', 0, $this);
     }
 
     /**
-     * 设置/获取 style 值
-     *
-     * @param unknown_type $val
-     * @return unknown
+     * 设置/获取 style 名
+     * @param string $val
+     * @return mixed
      */
     public function style ($val = null) {
         if (!empty($val)) {
@@ -107,8 +98,8 @@ class template extends rgx {
 
     /**
      * 获取已设置的数据
-     * @param  [type] $key [description]
-     * @return [type]      [description]
+     * @param string $key
+     * @return mixed
      */
     public function get ($key) {
         return isset($this->_vars[$key]) ? $this->_vars[$key] : null;
@@ -116,12 +107,12 @@ class template extends rgx {
 
     /**
      * 数据变量赋值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $value
+     * @param string $key
+     * @param mixed  $value
      */
     public function assign ($key, $value) {
-        if (($pos1 = strpos($key, '[')) !== false && ($pos2 = strpos($key, ']')) !== false) {
+        if (($pos1 = strpos($key, '[')) !== false && 
+                ($pos2 = strpos($key, ']')) !== false) {
             $skey = substr($key, $pos1 + 1, $pos2 - $pos1 - 1);
             $key = substr($key, 0, $pos1);
             if ($skey == '') {
@@ -137,11 +128,10 @@ class template extends rgx {
     }
 
     /**
-     * 输出模板
-     *
-     * @param unknown_type $file
-     * @param unknown_type $ctype
-     * @param unknown_type $obuf
+     * 渲染输出模板
+     * @param string $file
+     * @param string $ctype
+     * @param array $headers
      */
     public function display ($file, $ctype = "text/html", $headers = []) {
         if (!IS_CLI) {
@@ -154,13 +144,17 @@ class template extends rgx {
         exit($this->fetch($file, false));
     }
 
-
+    /**
+     * 常量定义
+     */
     public function define_ctpl_url () {
         if (IS_ALIAS && D_ALIAS_APPEND == 'default') {
-            define ('CTPL_URL', BASE_URL . APP_NAME . '/template/' . $this->_conf['style'] . '/');
+            define ('CTPL_URL', BASE_URL . APP_NAME . '/template/' . 
+                $this->_conf['style'] . '/');
         }
         else if (IS_ALIAS && D_ALIAS_APPEND != 'default') {
-            define ('CTPL_URL', BASE_URL . D_ALIAS_APPEND . '/template/' . $this->_conf['style'] . '/');
+            define ('CTPL_URL', BASE_URL . D_ALIAS_APPEND . 
+                '/template/' . $this->_conf['style'] . '/');
         }
         else {
             define ('CTPL_URL', APP_URL . 'template/' . $this->_conf['style'] . '/');
@@ -168,10 +162,9 @@ class template extends rgx {
     }
 
     /**
-     * 获取模板输出
-     *
+     * 获取模板渲染输出后的内容
      * @param string $file
-     * @param boolean $outbuf
+     * @param string $outbuf
      * @return string
      */
     public function fetch ($file, $outbuf = true) {
@@ -219,10 +212,9 @@ class template extends rgx {
             return $content;
         }
     }
-
+    
     /**
-     * 解析 模板文件
-     *
+     * 解析生成临时文件
      * @param string $tmpfile
      * @param string $sfile
      */
@@ -314,23 +306,22 @@ class template extends rgx {
     }
 
     /**
-     * 解析 url 标签
-     *
-     * @param unknown_type $matches
-     * @return unknown
+     * callback 解析 url 标签 
+     * @param array $matches
+     * @return mixed
      */
-    private function parse_url ($matches = array()) {
-        $str = trim(str_replace(array( "'", "\""), '', $matches[1]));
-        return call_user_func_array(array('\re\rgx\router', 'url'), array_map('trim', explode(',', $str)));
+    private function parse_url ($matches = []) {
+        $str = trim(str_replace([ "'", "\""], '', $matches[1]));
+        return call_user_func_array(['\re\rgx\router', 'url'], 
+                array_map('trim', explode(',', $str)));
     }
 
     /**
-     * 解析 语言 标签
-     *
-     * @param unknown_type $matches
-     * @return unknown
+     * callback 解析 语言 标签
+     * @param array $matches
+     * @return string
      */
-    private function parse_lang ($matches = array()) {
+    private function parse_lang ($matches = []) {
         $expression = trim($matches[1]);
         if (substr($expression, 0, 1) == '$') {
             return "<?php echo(\$GLOBALS['_TPL']->lang($expression)); ?>";
@@ -339,12 +330,12 @@ class template extends rgx {
     }
 
     /**
-     * 解析 常量 标签
-     *
-     * @param unknown_type $matches
-     * @return unknown
+     * callback 解析 常量 标签
+     * @param array $matches
+     * @throws exception
+     * @return string
      */
-    private function parse_constant ($matches = array()) {
+    private function parse_constant ($matches = []) {
         // 优先返回常量值
         if (defined(strtoupper($matches[1]))) {
             return constant(strtoupper($matches[1]));
@@ -353,29 +344,26 @@ class template extends rgx {
             return CFG($matches[1]);
         }
         else {
-            throw new exception(LANG('undefined constant', $matches[1]), exception::NOT_EXISTS);
+            throw new exception(LANG('undefined constant', $matches[1]), 
+                exception::NOT_EXISTS);
         }
     }
 
     /**
-     * 解析 foreach 标签
-     *
-     * @param unknown_type $matches
-     * @return unknown
+     * callback 解析 foreach 标签
+     * @param array $matches
+     * @return string
      */
-    private function parse_foreach ($matches = array()) {
+    private function parse_foreach ($matches = []) {
         $ret = "<?php unset({$matches[2]}, {$matches[3]}); {$matches[2]}_index = 0; ";
         $ret .= "foreach ((array){$matches[1]} as {$matches[2]} => {$matches[3]}): ";
         return $ret . "{$matches[2]}_index ++;?>";
     }
 
     /**
-     * 解析 变量 标签
-     *
-     * @example $foo , $foo ? 1 : 2 , $foo|cut,'200','' ,
-     *          $foo|thumb,'200x200',$foo|html,$foo|escape
-     *          $foo|date , 'Y-m-d H:i:s'
-     * @param mixed $matches
+     * callback 解析 变量 标签
+     * @param unknown $matches
+     * @throws exception
      * @return string
      */
     private function parse_var ($matches) {
@@ -434,7 +422,8 @@ class template extends rgx {
                         break;
                     // {$foo|cut,32,..}
                     case 'cut':
-                        $var = "RGX\\misc::cutstr({$var}, " . intval($temp[1]) . (isset($temp[2]) ? (", '{$temp[2]}'") : '') . ")";
+                        $var = "RGX\\misc::cut_str({$var}, " . intval($temp[1]) . 
+                                    (isset($temp[2]) ? (", '{$temp[2]}'") : '') . ")";
                         break;
                     // {$foo|date,Y-m-d H:i:s}
                     case 'date':
@@ -473,7 +462,6 @@ class template extends rgx {
 
     /**
      * 解析 include 标签
-     *
      * @param ref $html
      * @param integer $limit
      */
@@ -529,10 +517,9 @@ class template extends rgx {
 
     /**
      * 检查缓存模板文件是否可用
-     *
-     * @param unknown_type $tmpfile
-     * @param unknown_type $sfile
-     * @return unknown
+     * @param string $tmpfile
+     * @param string $sfile
+     * @return boolean
      */
     private function check_expired ($tmpfile, $sfile) {
         $ret = false;
@@ -544,7 +531,6 @@ class template extends rgx {
 
     /**
      * 解析模板文件路径
-     *
      * @example index.html , default:index.html , admin@default:index.html
      * @abstract APP@style:tplfile
      * @param string $sfile
@@ -572,8 +558,10 @@ class template extends rgx {
 
     /**
      * 语言解析
+     * @param array $args
+     * @return string
      */
-    public function lang ($args) {
+    public function lang ($args = []) {
         $keys = is_array($args) ? $args : explode(',',
                 preg_replace('/[\'|\"]*/', '', $args));
         if (!empty($keys)) {
@@ -596,8 +584,7 @@ class template extends rgx {
 
     /**
      * 设置当前模块名称
-     *
-     * @param unknown_type $mod
+     * @param string $mod
      */
     public function set_cmod ($mod = false) {
         $this->_conf['cur_mod'] = (bool) $mod;
@@ -605,9 +592,8 @@ class template extends rgx {
 
     /**
      * 获取模板文件对应的缓存文件路径
-     *
-     * @param unknown_type $file
-     * @return unknown
+     * @param string $file
+     * @return string
      */
     private function get_cache_path ($file) {
         $mod = $this->_conf['cur_mod'] ? $this->_conf['cur_mod'] : $GLOBALS['_MOD'];

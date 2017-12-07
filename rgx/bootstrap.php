@@ -51,6 +51,7 @@ define('RGX_PATH', __DIR__ . DS);
 define('MOD_PATH', APP_PATH . 'module' . DS);
 define('PLU_PATH', APP_PATH . 'plugin' . DS);
 define('TPL_PATH', APP_PATH . 'template' . DS);
+define('LANG_PATH', APP_PATH . 'lang' . DS);
 define('TEMP_PATH', DATA_PATH . 'temp' . DS);
 define('CACHE_PATH', DATA_PATH . 'cache' . DS);
 define('UPLOAD_PATH', DATA_PATH . 'attachment' . DS);

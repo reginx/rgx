@@ -2,24 +2,22 @@
 namespace re\rgx;
 /**
  * APC 缓存驱动类
- * @copyright reginx.com
- * $Id: apc.cache.php 5 2017-07-19 03:44:30Z reginx $
+ * @author reginx
  */
 class apc_cache extends cache {
     
     /**
-     * 配置信息
-     *
-     * @var unknown_type
+     * 前缀
+     * @var string
      */
     private $_pre = 'pre_';
     
     /**
-     * 架构函数
-     *
-     * @param unknown_type $conf
+     * 架构方法
+     * @param array $conf
+     * @throws exception
      */
-    public function __construct ($conf = array()) {
+    public function __construct ($conf = []) {
         $this->_pre = isset($conf['pre']) ? $conf['pre'] : 'pre_';
         if (!function_exists('apc_fetch')) {
             throw new exception(LANG('does not support', 'APC '), exception::NOT_EXISTS);
@@ -28,9 +26,8 @@ class apc_cache extends cache {
     
     /**
      * 获取值
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * {@inheritDoc}
+     * @see \re\rgx\cache::get()
      */
     public function get ($key) {
         $this->count('r');
@@ -39,11 +36,8 @@ class apc_cache extends cache {
     
     /**
      * 写入缓存
-     *
-     * @param String $key
-     * @param Mixed $val
-     * @param Integer $ttl
-     * @return Mixed
+     * {@inheritDoc}
+     * @see \re\rgx\cache::set()
      */
     public function set ($key, $val, $ttl = null) {
         $this->count('w');
@@ -52,8 +46,8 @@ class apc_cache extends cache {
 
     /**
      * 清除缓存数据
-     *
-     * @param unknown_type $key
+     * {@inheritDoc}
+     * @see \re\rgx\cache::flush()
      */
     public function flush ($group = null) {
         // 清除指定前缀缓存
@@ -75,21 +69,19 @@ class apc_cache extends cache {
         }
     }
     
-    
     /**
-     * 删除单个缓存
-     *
-     * @param unknown_type $key
-     * @param unknown_type $pre
-     * @return unknown
+     *  删除单个缓存
+     * {@inheritDoc}
+     * @see \re\rgx\cache::del()
      */
     public function del ($key) {
         return apc_delete(strtolower($this->_pre . $key));
     }
     
-    
     /**
      * 运行状态统计
+     * {@inheritDoc}
+     * @see \re\rgx\cache::stat()
      */
     public function stat(){
         $ret  = array();
@@ -101,5 +93,4 @@ class apc_cache extends cache {
         return $ret;
     }
     
-}// End Class
-?>
+}

@@ -9,8 +9,8 @@ class rgx implements \ArrayAccess {
 
     /**
      * 是否存在
-     * @param  [type] $offset [description]
-     * @return [type]         [description]
+     * {@inheritDoc}
+     * @see ArrayAccess::offsetExists()
      */
     public function offsetExists ($offset) {
         return property_exists($this, $offset);
@@ -18,8 +18,8 @@ class rgx implements \ArrayAccess {
 
     /**
      * 获取
-     * @param  [type] $offset [description]
-     * @return [type]         [description]
+     * {@inheritDoc}
+     * @see ArrayAccess::offsetGet()
      */
     public function offsetGet ($offset) {
         return $this->$offset;
@@ -27,9 +27,8 @@ class rgx implements \ArrayAccess {
 
     /**
      * 设置
-     * @param  [type] $offset [description]
-     * @param  [type] $value  [description]
-     * @return [type]         [description]
+     * {@inheritDoc}
+     * @see ArrayAccess::offsetSet()
      */
     public function offsetSet ($offset, $value) {
         $this->$offset = $value;
@@ -37,73 +36,77 @@ class rgx implements \ArrayAccess {
 
     /**
      * 重置
-     * @param  [type] $offset [description]
-     * @return [type]         [description]
+     * {@inheritDoc}
+     * @see ArrayAccess::offsetUnset()
      */
     public function offsetUnset ($offset) {
         $this->$offset = null;
     }
-    
+
     /**
      * Setter
-     *
-     * @param unknown $key
-     * @param unknown $value
+     * @param string $key
+     * @param mixed $value
      */
     public function __set ($key, $value) {
         $this->$key = $value;
     }
-    
+
     /**
      * Getter
-     *
-     * @param mixed $key
+     * @param string $key
+     * @return mixed
      */
     public function __get ($key) {
         return isset($this->$key) ? $this->$key : null;
     }
-    
+
     /**
-     * 做为字符串时输出
+     * 转换为字符串
+     * @return string
      */
     public function __toString () {
         return get_class($this);
     }
-    
+
     /**
-     * Debug info
+     * 调试输出
+     * @return array|NULL[]
      */
     public function __debugInfo () {
         return RUN_MODE == 'debug' ? get_object_vars($this) : [
             get_class($this)
         ];
     }
-    
+
 }
 
 /**
- * get local string
+ * 获取语言变量
+ * {@inheritDoc}
+ * @see \re\rgx\lang::get()
  */
 function LANG () {
     return lang::get(func_get_args());
 }
 
-
 /**
- * get obj instance
- * @param unknown $class
+ * 获取指定类的实例
+ * @param string $class
  * @param string $single
- * @param unknown $extra
+ * @param mixed $extra
+ * @return \re\rgx\rgx
  */
 function OBJ ($class, $single = true, $extra = null) {
     return app::get_instance($class, $single, $extra);
 }
 
 /**
- * get/set config item
- * @param unknown $key
- * @param unknown $value
- * @param string $sync
+ * 设置/获取配置值
+ * @param string $key
+ * @param mixed $value
+ * @param boolean $sync
+ * @return mixed
  */
 function CFG ($key, $value = null, $sync = false) {
     if ($value !== null) {
@@ -112,12 +115,12 @@ function CFG ($key, $value = null, $sync = false) {
     return config::get_instance()->get($key);
 }
 
-
 /**
- * get/set cache item
- * @param unknown $key
- * @param unknown $value
- * @param string $sync
+ * 设置或获取缓存值
+ * @param string $key
+ * @param string $value
+ * @param number $ttl
+ * @return mixed
  */
 function CACHE ($key, $value = null, $ttl = null) {
     // value 作为数据来源的callback
@@ -137,29 +140,34 @@ function CACHE ($key, $value = null, $ttl = null) {
 }
 
 /**
- * write log
- * @param unknown $mod
- * @param unknown $msg
- * @param string $trace
+ * 写入日志
+ * @param string $mod
+ * @param mixed $msg
+ * @param boolean $trace
+ * @param mixed $trace_stack
+ * {@inheritDoc}
+ * @see \re\rgx\app::log()
  */
 function LOGS ($mod, $msg, $trace = true, $trace_stack = null) {
     app::log($mod)->write($msg, $trace, $trace_stack);
 }
 
 /**
- * URL generate
+ * 生成 url
+ * {@inheritDoc}
+ * @see \re\rgx\router::url()
  */
 function URL () {
     return router::url(func_get_args());
 }
 
 /**
- * Dump
+ * var dump
  */
 function DUMP () {
     if (!IS_CLI) {
         header("Content-Type: text/html;charset=utf-8");
     }
     call_user_func_array('var_dump', func_get_args());
-    die;
+    exit(0);
 }
