@@ -1,0 +1,15 @@
+
+sess 回话
+
+1. 使用 redis 的 hash 类型
+
+sess 数据存储
+
+1. 使用 redis 的 hash类型
+2. 结构
+    {
+        sess_id : {
+            id  : 20,
+            name    : 'test'
+        }
+    }
