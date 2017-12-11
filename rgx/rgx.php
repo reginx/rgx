@@ -104,27 +104,13 @@ else {
         });
 
         // 基本库, 配置所需的驱动库及语言包
-        $files[] = RGX_PATH . 'extra' . DS . 'lang'  . DS . 'default.' . ($config['lang'] ?: 'zh-cn') . '.php';
-
-        array_walk(glob(RGX_PATH . 'extra/cache/*.php'), function ($file) use (&$files) {
-            $files[] = $file;
-        });
-        array_walk(glob(RGX_PATH . 'extra/db/*.php'), function ($file) use (&$files) {
-            $files[] = $file;
-        });
-        array_walk(glob(RGX_PATH . 'extra/log/*.php'), function ($file) use (&$files) {
-            $files[] = $file;
-        });
-        array_walk(glob(RGX_PATH . 'extra/sess/*.php'), function ($file) use (&$files) {
-            $files[] = $file;
-        });
-        array_walk(glob(RGX_PATH . 'extra/image/*.php'), function ($file) use (&$files) {
-            $files[] = $file;
+        array_walk(['cache', 'db', 'log', 'sess', 'image'], function ($dir) use (&$files) {
+            $files += glob(RGX_PATH . "extra/{$dir}/*.php");
         });
 
         if (RUN_MODE == 'full') {
-            $find = function ($type, $dir, &$ret, $callback) {
-                foreach (glob($dir . '*') as $v) {
+            $find = function ($type, &$ret, $callback) {
+                foreach (glob(INC_PATH . $dir . DS . '*') as $v) {
                     if (is_dir($v)) {
                         $callback($type, $v . DS, $ret, $callback);
                     }
@@ -133,9 +119,9 @@ else {
                     }
                 }
             };
-            $find('cls', INC_PATH . 'cls' . DS, $files, $find);
-            $find('lib', INC_PATH . 'lib' . DS, $files, $find);
-            $find('table', INC_PATH . 'table' . DS, $files, $find);
+            array_walk(['table', 'helper'], function ($dir) use (&$files) {
+                $find($dir, $files, $find);
+            });
         }
 
         $out = '<?php namespace re\rgx {' . PHP_EOL;
