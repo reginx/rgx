@@ -1,22 +1,24 @@
 <?php
 namespace re\rgx;
-
+/**
+ * GD图像处理类
+ * @author reginx
+ */
 class gd_image extends image {
 
     /**
      * 支付的格式
-     * @var unknown
+     * @var array
      */
     public static $ext = ['jpg' , 'jpeg' , 'gif' , 'png' , 'bmp'];
 
     /**
-     * 生成缩略图相关属性(剪切方式)
-     * @abstract 计算剪切坐标 及 临时缩略图的尺寸
-     * @param unknown_type $swidth
-     * @param unknown_type $sheight
-     * @param unknown_type $twidth
-     * @param unknown_type $theight
-     * @return unknown
+     *  生成缩略图相关属性(剪切方式)
+     * @param number $srcw
+     * @param number $srch
+     * @param number $dstw
+     * @param number $dsth
+     * @return mixed
      */
     private static function get_cut_prop ($srcw, $srch, $dstw, $dsth) {
         $prop            = max($dstw / $srcw, $dsth / $srch);
@@ -31,6 +33,7 @@ class gd_image extends image {
 
 
     /**
+     * 生成验证码
      * {@inheritDoc}
      * @see \re\rgx\image::captcha()
      */
@@ -92,6 +95,7 @@ class gd_image extends image {
     }
 
     /**
+     * 获取图像信息
      * {@inheritDoc}
      * @see \re\rgx\image::get_info()
      */
@@ -123,14 +127,9 @@ class gd_image extends image {
     }
 
     /**
-     * 缩略图
-     *
-     * @param unknown_type $sfile
-     * @param unknown_type $outfile
-     * @param unknown_type $width
-     * @param unknown_type $height
-     * @param unknown_type $type
-     * @return string $outfile
+     * 生成缩略图
+     * {@inheritDoc}
+     * @see \re\rgx\image::thumb()
      */
     public function thumb ($sfile , $outfile = 'auto' , $param = []) {
         $config            = [];
@@ -234,6 +233,7 @@ class gd_image extends image {
     }
 
     /**
+     * 生成水印
      * {@inheritDoc}
      * @see \re\rgx\image::water()
      */
@@ -241,6 +241,5 @@ class gd_image extends image {
         // TODO 自动生成的方法存根
 
     }
-
 
 }

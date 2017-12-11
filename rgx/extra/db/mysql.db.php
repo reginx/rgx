@@ -1,17 +1,20 @@
 <?php
 namespace re\rgx;
-
+/**
+ * MySQL 数据库操作类
+ * @author reginx
+ */
 class mysql_db extends database {
-    
+
     /**
      * 数据库操作句柄
-     * @var unknown
+     * @var resource
      */
     private $_pdo  = null;
-    
+
     /**
      * 配置信息
-     * @var unknown
+     * @var array
      */
     private $_conf = null;
 
@@ -23,7 +26,7 @@ class mysql_db extends database {
 
     /**
      * 架构方法
-     * @param unknown $conf
+     * @param array $conf
      */
     public function __construct ($conf) {
         ini_set('default_socket_timeout', 120);
@@ -39,16 +42,17 @@ class mysql_db extends database {
     }
 
     /**
-     * [__sleep description]
-     * @return array [description]
+     * sleep 魔术方法
+     * @return NULL
      */
     public function __sleep () {
         return null;
     }
-    
+
     /**
      * 获取 SQL 记录
-     * @return [type] [description]
+     * {@inheritDoc}
+     * @see \re\rgx\database::get_sql()
      */
     public function get_sql () {
         return $this->_sql;
@@ -56,14 +60,14 @@ class mysql_db extends database {
 
     /**
      * 添加SQL记录
-     * @param [type] $sql [description]
+     * @param unknown $sql
      */
     public function add_sql ($sql) {
         if (RUN_MODE == 'debug') {
             $this->_sql[] = is_array($sql) ? join("\n\n", $sql) : $sql;
         }
     }
-    
+
     /**
      * 连接数据库
      * @throws exception
@@ -80,10 +84,10 @@ class mysql_db extends database {
                 exception::CONFIG_ERROR);
         }
     }
-    
+
     /**
-     * parse config string
-     * @param unknown $conf
+     * 解析数据库连接配置
+     * @param array $conf
      * @throws exception
      */
     private function _parse_config ($conf) {
@@ -93,7 +97,7 @@ class mysql_db extends database {
         }
         parse_str(str_replace(';', '&', $conf['default']), $this->_conf);
     }
-    
+
     /**
      * 执行查询
      * {@inheritDoc}
@@ -113,8 +117,9 @@ class mysql_db extends database {
         }
         return $ret;
     }
-    
+
     /**
+     * 执行
      * {@inheritDoc}
      * @see \re\rgx\database::exec()
      */
@@ -143,6 +148,7 @@ class mysql_db extends database {
     }
 
     /**
+     * 执行事务
      * {@inheritDoc}
      * @see \re\rgx\database::transaction()
      */
@@ -164,12 +170,12 @@ class mysql_db extends database {
         }
         catch (\PDOException $e) {
             LOGS('db', $e->__toString() . PHP_EOL . join(PHP_EOL, $sql_list));
-            $ret = false;
             $this->_pdo->rollback();
+            $ret = false;
         }
         return $ret;
     }
-    
+
     /**
      * 选择数据库
      * {@inheritDoc}
@@ -186,6 +192,7 @@ class mysql_db extends database {
     }
 
     /**
+     * 设置会话编码
      * {@inheritDoc}
      * @see \re\rgx\database::set_charset()
      */
@@ -198,7 +205,7 @@ class mysql_db extends database {
             throw new exception($e->getMessage(), exception::SQL_QUERY_ERROR, true);
         }
     }
-    
+
     /**
      * 获取错误描述
      * {@inheritDoc}
@@ -208,7 +215,7 @@ class mysql_db extends database {
         $error = $this->_pdo->errorInfo();
         return $error ? join("#", [$error[1], $error[2]]) : '';
     }
-    
+
     /**
      * 获取单条记录
      * {@inheritDoc}
@@ -288,7 +295,7 @@ class mysql_db extends database {
     }
 
     /**
-     * 数据插入
+     * 新增
      * {@inheritDoc}
      * @see \re\rgx\database::insert()
      */
@@ -311,7 +318,7 @@ class mysql_db extends database {
         }
         return $ret;
     }
-    
+
     /**
      * 删除
      * {@inheritDoc}
@@ -335,7 +342,6 @@ class mysql_db extends database {
         }
         return $ret;
     }
-    
 
     /**
      * 获取记录第一个字段
@@ -361,11 +367,9 @@ class mysql_db extends database {
     }
 
     /**
-     * 调用 存储过程 或 事务
-     *
-     * @param string $sql
-     * @param string $type
-     * @return integer
+     * 调用
+     * {@inheritDoc}
+     * @see \re\rgx\database::call()
      */
     public function call ($sql, $callback = false) {
         $query = $this->query($sql);
@@ -381,7 +385,7 @@ class mysql_db extends database {
         }
         return $result;
     }
-    
+
     /**
      * 获取分析报告
      * {@inheritDoc}

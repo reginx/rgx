@@ -111,15 +111,15 @@ class mem_cache extends cache {
      */
     public function stat () {
         $stat = $this->_mobj->getStats();
-        $ret   = array();
-        $ret[] = array('命中率' , sprintf('%.2f', $stat["get_hits"] / ($stat["get_misses"] + $stat["get_hits"])));
-        $ret[] = array('丢失率' , sprintf('%.2f', $stat["get_misses"] / ($stat["get_misses"] + $stat["get_hits"])));
-        $ret[] = array('已读数' , sprintf('%.2f K', $stat["bytes_read"] / 1024 ));
-        $ret[] = array('已写数' , sprintf('%.2f K', $stat["bytes_written"] / 1024 ));
-        $ret[] = array('总内存' , sprintf('%.2f M', $stat["limit_maxbytes"] / 1024 / 1024 ));
+        $ret   = [];
+        $ret[] = ['命中率', sprintf('%.2f', $stat["get_hits"] / ($stat["get_misses"] + $stat["get_hits"]))];
+        $ret[] = ['丢失率', sprintf('%.2f', $stat["get_misses"] / ($stat["get_misses"] + $stat["get_hits"]))];
+        $ret[] = ['已读数', sprintf('%.2f K', $stat["bytes_read"] / 1024)];
+        $ret[] = ['已写数', sprintf('%.2f K', $stat["bytes_written"] / 1024)];
+        $ret[] = ['总内存', sprintf('%.2f M', $stat["limit_maxbytes"] / 1024 / 1024)];
         return $ret;
     }
-    
+
     /**
      * 获取 key
      * @param string $str

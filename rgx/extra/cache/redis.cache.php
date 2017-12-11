@@ -5,7 +5,7 @@ namespace re\rgx;
  * @author reginx
  */
 class redis_cache extends cache {
-    
+
     /**
      * 前缀
      * @var string
@@ -17,7 +17,7 @@ class redis_cache extends cache {
      * @var unknown
      */
     private $_redis = null;
-    
+
     /**
      * 架构方法
      * @param array $conf
@@ -38,7 +38,7 @@ class redis_cache extends cache {
             throw new exception(LANG('config error', 'Redis'), exception::CONFIG_ERROR);
         }
     }
-    
+
     /**
      * 获取项目键
      * @param string $key
@@ -47,24 +47,24 @@ class redis_cache extends cache {
     private function _getkey ($key) {
         return $this->_pre . $key;
     }
-    
+
     /**
      * 统计
      * {@inheritDoc}
      * @see \re\rgx\cache::stat()
      */
     public function stat () {
-        $ret   = $stat  = array();
+        $ret   = $stat  = [];
         $info  = $this->_redis->info();
-        $ret[] = array(LANG('cache type'), 'Redis v' . $info['redis_version']);
-        $ret[] = array(LANG('uptime'), $info['uptime_in_days'] . ' Days');
-        $ret[] = array(LANG('cache entries'), $this->_redis->dbSize());
-        $ret[] = array('命中总数', $info['keyspace_hits']);
-        $ret[] = array('丢失总数', $info['keyspace_misses']);
-        $ret[] = array('执行总数', $info['total_commands_processed']);
-        $ret[] = array(LANG('queries per second avg'), $info['instantaneous_ops_per_sec']);
-        $ret[] = array(LANG('number of connections'), $info['connected_clients']);
-        $ret[] = array('持久化时间', date('Y-m-d H:i:s', $info['rdb_last_save_time']));
+        $ret[] = [LANG('cache type'), 'Redis v' . $info['redis_version']];
+        $ret[] = [LANG('uptime'), $info['uptime_in_days'] . ' Days'];
+        $ret[] = [LANG('cache entries'), $this->_redis->dbSize()];
+        $ret[] = ['命中总数', $info['keyspace_hits']];
+        $ret[] = ['丢失总数', $info['keyspace_misses']];
+        $ret[] = ['执行总数', $info['total_commands_processed']];
+        $ret[] = [LANG('queries per second avg'), $info['instantaneous_ops_per_sec']];
+        $ret[] = [LANG('number of connections'), $info['connected_clients']];
+        $ret[] = ['持久化时间', date('Y-m-d H:i:s', $info['rdb_last_save_time'])];
         return $ret;
     }
 
@@ -115,5 +115,14 @@ class redis_cache extends cache {
      */
     public function flush ($group = null) {
         return $this->_redis->flushDB();
+    }
+
+    /**
+     * 析构函数
+     */
+    public function __destruct () {
+        if ($this->_redis) {
+            $this->_redis->close();
+        }
     }
 }

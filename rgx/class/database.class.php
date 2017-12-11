@@ -105,17 +105,15 @@ abstract class database {
 
     /**
      * 获取单条单字段
-     * @param unknown $sql
+     * @param string $sql
      * @param string $quiet
      */
     abstract public function fetch ($sql, $quiet = false, $callback = false);
 
     /**
      * 执行SQL
-     * @param  [type]  $sql      SQL 语句
-     * @param  boolean $quiet    是否为静默模式
-     * @param  [type]  $callback 回调函数
-     * @return [type]            [description]
+     * @param string    $sql
+     * @param callable  $callback
      */
     abstract public function exec ($sql, $callback = null);
 
@@ -133,9 +131,15 @@ abstract class database {
 
     /**
      * 获取查询SQL记录
-     * @return [type] [description]
      */
     abstract public function get_sql ();
+    
+    /**
+     * 调用
+     * @param string $sql
+     * @param callable $callback
+     */
+    abstract public  function call ($sql, $callback = null);
 
     /**
      * 获取sql执行报告

@@ -1,51 +1,47 @@
 <?php
 namespace re\rgx;
 /**
- * Redis session 实现
- * @copyright reginx.com
- * $Id: redis.sess.php 5 2017-07-19 03:44:30Z reginx $
+ * 基于 Redis session 实现
+ * @author reginx
  */
 class redis_sess extends sess {
-    
+
     /**
      * 存储域
-     *
-     * @var unknown_type
+     * @var string
      */
     private $_uuid = null;
-    
+
     /**
      * Cookie key
-     *
-     * @var unknown_type
+     * @var string
      */
     private $_ckey = '';
-    
+
     /**
      * Redis 操作对象
-     *
-     * @var unknown_type
+     * @var \Redis
      */
     private $_redis = null;
-    
+
     /**
      * GC 概率配置
-     *
-     * @var unknown_type
+     * @var array
      */
-    private $_gc    = array(1, 100);
-    
+    private $_gc    = [1, 100];
+
     /**
      * 默认生存周期
-     *
-     * @var unknown_type
+     * @var number
      */
     private $_ttl   = 1800;
-    
+
     /**
      * 架构函数
-     *
-     * @param unknown_type $conf
+     * @param array  $conf
+     * @param string $sess_name
+     * @param string $sess_id
+     * @throws exception
      */
     public function __construct ($conf, $sess_name = null, $sess_id = null) {
         if (!class_exists('\Redis', false)) {
@@ -73,7 +69,7 @@ class redis_sess extends sess {
         }
         // 更新 session 开始时间
         $this->set('REX_DATE', REQUEST_TIME);
-        
+
         header("Cache-control: private"); // 使用http头控制缓存
         // 更新 cookie ttl , + 30min
         setcookie($this->_ckey, $this->_uuid, REQUEST_TIME + $this->_ttl , "/" , parent::get_domain());
@@ -83,7 +79,8 @@ class redis_sess extends sess {
 
     /**
      * GC 实现
-     *
+     * {@inheritDoc}
+     * @see \re\rgx\sess::gc()
      */
     public function gc () {
         $date = $this->get('REX_DATE');
@@ -109,20 +106,20 @@ class redis_sess extends sess {
         }
         $this->set('REX_DATE', REQUEST_TIME);
     }
-    
+
     /**
      * 获取 session ID
-     *
-     * @return unknown
+     * {@inheritDoc}
+     * @see \re\rgx\sess::sess_id()
      */
     public function sess_id () {
         return $this->_uuid;
     }
-    
+
     /**
      * 获取当前配置信息
-     *
-     * @return unknown
+     * {@inheritDoc}
+     * @see \re\rgx\sess::get_config()
      */
     public function get_config () {
         return array(
@@ -131,30 +128,28 @@ class redis_sess extends sess {
             'expires'   => 1800
         );
     }
-    
+
     /**
-     * 获取项目值
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 获取值
+     * {@inheritDoc}
+     * @see \re\rgx\sess::get()
      */
     public function get ($key) {
-        $ret = $this->_redis->hExists($this->_uuid, $key) ? $this->_redis->hGet($this->_uuid, $key) : null;
+        $ret = $this->_redis->hExists($this->_uuid, $key) ? 
+                $this->_redis->hGet($this->_uuid, $key) : null;
         if (!empty($ret)) {
-            if (in_array(substr($ret, 0, 2), array('a:', 's:', 'i:', 'd:', 'N;', 'b:', 'O:'))
-                    && in_array(substr($ret, -1), array(';', '}'))) {
+            if (in_array(substr($ret, 0, 2), ['a:', 's:', 'i:', 'd:', 'N;', 'b:', 'O:'])
+                    && in_array(substr($ret, -1), [';', '}'])) {
                 $ret = unserialize($ret);
             }
         }
         return $ret;
     }
-    
+
     /**
-     * 获取项目值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $value
-     * @return unknown
+     * 设置值
+     * {@inheritDoc}
+     * @see \re\rgx\sess::set()
      */
     public function set ($key, $value) {
         if (is_array($value)) {
@@ -162,33 +157,29 @@ class redis_sess extends sess {
         }
         return $this->_redis->hSet($this->_uuid, $key, $value);
     }
-    
+
     /**
-     * 删除项目值
-     *
-     * @param unknown_type $key
-     * @param unknown_type $value
-     * @return unknown
+     * 删除值
+     * {@inheritDoc}
+     * @see \re\rgx\sess::del()
      */
     public function del ($key) {
         return $this->_redis->hDel($this->_uuid, $key);
     }
-    
+
     /**
-     * 验证是否存在某项目
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 是否存在项
+     * {@inheritDoc}
+     * @see \re\rgx\sess::exists()
      */
     public function exists ($key) {
         return $this->_redis->hExists($this->_uuid, $key);
     }
-    
+
     /**
-     * 销毁回话
-     *
-     * @param unknown_type $key
-     * @return unknown
+     * 销毁
+     * {@inheritDoc}
+     * @see \re\rgx\sess::remove()
      */
     public function remove () {
         // 设置 cookie 过期
@@ -196,5 +187,14 @@ class redis_sess extends sess {
         setcookie($this->_ckey, null, -1);
         $this->_redis->lRem('gc_task', $this->_uuid, 0);
         return $this->_redis->del($this->_uuid);
+    }
+
+    /**
+     * 析构方法
+     */
+    public function __destruct () {
+        if ($this->_redis) {
+            $this->_redis->close();
+        }
     }
 }

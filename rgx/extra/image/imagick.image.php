@@ -1,9 +1,13 @@
 <?php
 namespace re\rgx;
-
+/**
+ * Imagick 图片处理库
+ * @author reginx
+ */
 class imagick_image extends image {
     
     /**
+     * 生成验证码
      * {@inheritDoc}
      * @see \re\rgx\image::captcha()
      */
@@ -47,6 +51,7 @@ class imagick_image extends image {
     }
 
     /**
+     * 图片裁剪
      * {@inheritDoc}
      * @see \re\rgx\image::cut()
      */
@@ -56,6 +61,7 @@ class imagick_image extends image {
     }
 
     /**
+     * 获取图片信息
      * {@inheritDoc}
      * @see \re\rgx\image::get_info()
      */
@@ -72,6 +78,7 @@ class imagick_image extends image {
     }
 
     /**
+     * 生成缩略图
      * {@inheritDoc}
      * @see \re\rgx\image::thumb()
      */
@@ -140,7 +147,7 @@ class imagick_image extends image {
     
     /**
      * 获取位置设置
-     * @param unknown $pos
+     * @param number $pos
      */
     private function get_gravity ($pos) {
         switch ($pos) {
@@ -162,6 +169,7 @@ class imagick_image extends image {
     }
 
     /**
+     * 生成水印图
      * {@inheritDoc}
      * @see \re\rgx\image::water()
      */

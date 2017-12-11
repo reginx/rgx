@@ -1,41 +1,50 @@
 <?php
 namespace re\rgx;
-
+/**
+ * 文件日志类
+ * @author reginx
+ */
 class file_log extends log {
-    
+
     /**
      * 内容队列
      *
-     * @var unknown_type
+     * @var array
      */
     private $_queue = [];
-    
+
     /**
      * 资源句柄
      *
-     * @var unknown_type
+     * @var array
      */
     private $_handle = [];
-    
+
     /**
      * 当前日志文件
      *
-     * @var unknown_type
+     * @var string
      */
     private $_cur   = 'default';
 
-
+    /**
+     * 配置信息
+     * @var array
+     */
     protected $config = null;
 
-
+    /**
+     * 架构方法
+     * @param unknown $config
+     */
     public function __construct ($config) {
         $this->config = $config;
     }
-    
+
     /**
      * 初始化
-     *
-     * @param unknown_type $key
+     * {@inheritDoc}
+     * @see \re\rgx\log::init()
      */
     public function init ($key = null) {
         $this->_cur = empty($key) ? 'common' : $key;
@@ -43,9 +52,10 @@ class file_log extends log {
             $this->_handle[$this->_cur] = fopen($this->_get_file(), 'a+');
         }
     }
-    
+
     /**
-     * 获取文件全路径
+     * 获取文件绝对路径
+     * @return string
      */
     private function _get_file () {
         $file = DATA_PATH . 'log/' . date('Y-m-d', app::get_time()) . "_" .  $this->_cur . 
@@ -55,11 +65,11 @@ class file_log extends log {
         }
         return $file;
     }
-    
+
     /**
-     * 写入日志内容
-     *
-     * @param unknown_type $content
+     * 写入
+     * {@inheritDoc}
+     * @see \re\rgx\log::write()
      */
     public function write ($msg, $trace_log = false, $trace_stack = null) {
         $_msg = [];
@@ -69,7 +79,8 @@ class file_log extends log {
         }
         else {
             $_msg['msg'] = array_shift($msg);
-            $_msg['msg'] = is_array($_msg['msg']) ? json_encode($_msg['msg'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) : $_msg['msg'];
+            $_msg['msg'] = !is_array($_msg['msg']) ? $_msg['msg'] :
+                    json_encode($_msg['msg'], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
             $_msg['extra'] = empty($msg) ? 'Nil' : array_shift($msg);
         }
 
@@ -81,7 +92,7 @@ class file_log extends log {
             . " * @date " . (date('Y-m-d H:i:s ', REQUEST_TIME)) . PHP_EOL
             . " * @desc " . $_msg['msg'] . PHP_EOL
             . " * @extra " . str_replace("\n", "\n    ", $_msg['extra']) . PHP_EOL . PHP_EOL;
-            
+
         if ($trace_log) {
             $trace = $trace_stack ?: debug_backtrace(false);
             for ($i = 0; $i < count($trace) - 1; $i ++) {
@@ -111,11 +122,11 @@ class file_log extends log {
         }
         fwrite($this->_handle[$this->_cur], $output . PHP_EOL . ($this->config['dev'] ? '' : ("*/" . PHP_EOL . "?>")));
     }
-    
+
     /**
-     * 刷新缓冲区 & 持久化
-     *
-     * @param unknown_type $key
+     * 刷新缓冲区
+     * {@inheritDoc}
+     * @see \re\rgx\log::flush()
      */
     public function flush ($key = null) {
         if (!empty($key) && isset($this->_handle[$key])) {
@@ -127,10 +138,9 @@ class file_log extends log {
             }
         }
     }
-    
+
     /**
      * 析构函数
-     *
      */
     public function __destruct () {
         foreach ((array)$this->_handle as $v) {

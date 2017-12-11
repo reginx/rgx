@@ -5,13 +5,13 @@ namespace re\rgx;
  * @author reginx
  */
 class apc_cache extends cache {
-    
+
     /**
      * 前缀
      * @var string
      */
     private $_pre = 'pre_';
-    
+
     /**
      * 架构方法
      * @param array $conf
@@ -23,7 +23,7 @@ class apc_cache extends cache {
             throw new exception(LANG('does not support', 'APC '), exception::NOT_EXISTS);
         }
     }
-    
+
     /**
      * 获取值
      * {@inheritDoc}
@@ -33,7 +33,7 @@ class apc_cache extends cache {
         $this->count('r');
         return apc_fetch(strtolower($this->_pre . $key));
     }
-    
+
     /**
      * 写入缓存
      * {@inheritDoc}
@@ -68,7 +68,7 @@ class apc_cache extends cache {
             apc_clear_cache('user');
         }
     }
-    
+
     /**
      *  删除单个缓存
      * {@inheritDoc}
@@ -77,20 +77,20 @@ class apc_cache extends cache {
     public function del ($key) {
         return apc_delete(strtolower($this->_pre . $key));
     }
-    
+
     /**
      * 运行状态统计
      * {@inheritDoc}
      * @see \re\rgx\cache::stat()
      */
     public function stat(){
-        $ret  = array();
+        $ret  = [];
         $info = apc_cache_info('user');
-        $ret[] = array(LANG('cache type'), 'APC');
-        $ret[] = array(LANG('cache entries'), $info['num_entries']);
-        $ret[] = array(LANG('cache size'), sprintf('%.2f K' , $info['mem_size']  / 1024));
-        $ret[] = array(LANG('uptime'), core::duration($info['start_time']));
+        $ret[] = [LANG('cache type'), 'APC'];
+        $ret[] = [LANG('cache entries'), $info['num_entries']];
+        $ret[] = [LANG('cache size'), sprintf('%.2f K' , $info['mem_size']  / 1024)];
+        $ret[] = [LANG('uptime'), $info['start_time']];
         return $ret;
     }
-    
+
 }

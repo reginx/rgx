@@ -5,19 +5,19 @@ namespace re\rgx;
  * @author reginx
  */
 class file_cache extends cache {
-    
+
     /**
      * 前缀
      * @var string
      */
     private $_pre = 'RGX_';
-    
+
     /**
      * 缓存路径
      * @var string
      */
     private $_dir = CACHE_PATH;
-    
+
     /**
      * 架构方法
      * @param array $conf
@@ -30,7 +30,7 @@ class file_cache extends cache {
             misc::mkdir($this->_dir);
         }
     }
-    
+
     /**
      * 获取缓存文件
      * @param unknown $key
@@ -43,7 +43,7 @@ class file_cache extends cache {
         }
         return $this->_dir . $dir . DS . $this->_getfilename($key);
     }
-    
+
     /**
      * 获取Key对应的散列值作为文件名
      * @param string $key
@@ -56,7 +56,7 @@ class file_cache extends cache {
         }
         return sprintf('%X', crc32($key)) . '.php';
     }
-    
+
     /**
      * 计算目录名
      * @param string $key
@@ -69,7 +69,7 @@ class file_cache extends cache {
         }
         return sprintf('%08X', abs(crc32($dir)));
     }
-    
+
     /**
      * 获取缓存统计
      * @param string $path
@@ -93,7 +93,7 @@ class file_cache extends cache {
             }
         }
     }
-    
+
     /**
      * 统计
      * {@inheritDoc}
@@ -165,7 +165,7 @@ class file_cache extends cache {
             unlink($file);
         }
     }
-    
+
     /**
      * 批量清除缓存
      * {@inheritDoc}
