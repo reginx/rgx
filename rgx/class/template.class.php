@@ -311,7 +311,7 @@ class template extends rgx {
      * @return mixed
      */
     private function parse_url ($matches = []) {
-        $str = trim(str_replace([ "'", "\""], '', $matches[1]));
+        $str = trim(str_replace(["'", "\""], '', $matches[1]));
         return call_user_func_array(['\re\rgx\router', 'url'], 
                 array_map('trim', explode(',', $str)));
     }
