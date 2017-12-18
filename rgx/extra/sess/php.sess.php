@@ -32,8 +32,8 @@ class php_sess extends sess {
             session_id($_COOKIE[$sess_name]);
         }
         else {
-            $sess_id = 'RS' . sprintf('%03d', explode('.', $_SERVER['SERVER_ADDR'])[0]) . 
-                            md5(app::get_ip() . $_SERVER['HTTP_USER_AGENT']);
+            $sess_id = 'RS' . sprintf('%03d-', explode('.', $_SERVER['SERVER_ADDR'])[0]) . 
+                            md5(app::get_ip() . $_SERVER['HTTP_USER_AGENT'] . mt_rand(1000000, 9999999));
             session_id($sess_id);
         }
         session_start($extra);

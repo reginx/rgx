@@ -561,9 +561,8 @@ class table extends rgx {
                 $funstr[$k] = preg_replace('/(\w+?)_table/i', $this->_conf['pre'] . '\\1', $v);
             }
             // 会改动查询的原始条件
-            //$str = str_replace(')', ') ', str_replace('(', ' (', $str));
             preg_match_all(
-                    '/([0-9a-zA-Z\.\_\#]+)\s*(\>\=|\<\=|\!\=|\=|\>|\<|\slike\s|\sor\s|\sand\s)\s*([^\s]+)/ui',
+                    '/([0-9a-zA-Z\.\_\#]+)\s*(\>\=|\<\=|\!\=|\=|\>|\<|\s+not\s+like\s+|\s+like\s+|\s+or\s+|\s+and\s+)\s*([^\s]+)/ui',
                     $str, $blocks);
             for ($i = 0, $max = count($blocks[0]); $i < $max; $i ++) {
                 $temp = $this->escape($blocks[1][$i]) . ' ' . $blocks[2][$i] . ' ';

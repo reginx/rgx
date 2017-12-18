@@ -64,8 +64,8 @@ class redis_sess extends sess {
         $this->_uuid = empty($sess_id) ? (isset($_COOKIE[$this->_ckey]) ? $_COOKIE[$this->_ckey] : '') : $sess_id;
         if (!preg_match('/^RS\d{1,3}\-[\w\-]+$/i', $this->_uuid)) {
             // 新的 session 
-            $this->_uuid = 'RS' . sprintf('%03d', explode('.', $_SERVER['SERVER_ADDR'])[0]) . 
-                            md5(app::get_ip() . $_SERVER['HTTP_USER_AGENT']);
+            $this->_uuid = 'RS' . sprintf('%03d-', explode('.', $_SERVER['SERVER_ADDR'])[0]) . 
+                            md5(app::get_ip() . $_SERVER['HTTP_USER_AGENT'] . mt_rand(1000000, 9999999));
         }
         // 更新 session 开始时间
         $this->set('REX_DATE', REQUEST_TIME);

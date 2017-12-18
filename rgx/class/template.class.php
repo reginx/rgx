@@ -583,23 +583,13 @@ class template extends rgx {
     }
 
     /**
-     * 设置当前模块名称
-     * @param string $mod
-     */
-    public function set_cmod ($mod = false) {
-        $this->_conf['cur_mod'] = (bool) $mod;
-    }
-
-    /**
      * 获取模板文件对应的缓存文件路径
      * @param string $file
      * @return string
      */
     private function get_cache_path ($file) {
-        $mod = $this->_conf['cur_mod'] ? $this->_conf['cur_mod'] : $GLOBALS['_MOD'];
-        $key = $this->_conf['lang'] . '_' . $mod . '_' . $this->_conf['style'];
-        return $this->_conf['out_dir'] .
-                 sprintf('%09X', crc32(APP_NAME . $this->_conf['tpl_dir'] . $key . $file))
-                     .'.php';
+        return $this->_conf['out_dir'] . sprintf('%010X', 
+                    crc32($this->_conf['style'] . '_' . $this->_conf['lang'] . '_' . $file)) .
+                     '.php';
     }
 }
