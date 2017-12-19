@@ -15,7 +15,7 @@ class build {
      * 永远的 1.0
      * @var string
      */
-    public $version_code = '1.0.0';
+    public $version_code = '1.0.2';
 
     /**
      * 换行符
@@ -174,7 +174,7 @@ class build {
      * @param string $content
      */
     public function write_file ($file, $content) {
-        if (!file_put_contents($file, "\xEF\xBB\xBF" . $content, LOCK_EX)) {
+        if (!file_put_contents($file, $content, LOCK_EX)) {
             $this->halt('failed to write file ({$file})');
         }
     }
@@ -621,6 +621,7 @@ class table_build extends build {
             "generate " . $tab_path . ".table.php",
             "",
         ]);
+        $info = $this->get_info($table_name);
 
         $table_tpl = join($this->eol, [
             "<?php",
@@ -628,7 +629,7 @@ class table_build extends build {
             "",
             "/*",
             "  +-----------------------------------------------------------------",
-            "  + {$tab_name} 表模型",
+            "  + {$info['table_name']} 表模型",
             "  + ----------------------------------------------------------------",
             "  + @date " . date('Y-m-d H:i:s', time()),
             "  + @desc 若修改了表结构, 请使用下面的命令更新模型文件",
@@ -755,7 +756,7 @@ class table_build extends build {
         $fields = $defaults = $validate = $filter = $primary_key = [];
 
         // charset
-        $table_tpl = str_replace('-*-charset-*-', $this->get_charset($table_name), $table_tpl);
+        $table_tpl = str_replace('-*-charset-*-', $info['charset'], $table_tpl);
 
         $res = $this->pdo->query("show full fields from {$table_name}");
         $field_list = [];
@@ -861,15 +862,24 @@ class table_build extends build {
     }
 
     /**
-     * 获取表编码
+     * 获取表信息
      * @param unknown $table_name
      * @return string|mixed
      */
-    public function get_charset ($table_name) {
+    public function get_info ($table_name) {
+        $ret = [
+            'charset'       => 'utf8',
+            'table_name'    => $table_name
+        ];
         $match = [];
         $tab_sql = $this->pdo->query("show create table {$table_name}")->fetch(PDO::FETCH_ASSOC)['Create Table'];
         preg_match('/CHARSET=(\w+)/i', $tab_sql, $match);
-        return isset($match[1]) ? $match[1] : 'utf8';
+        $ret['charset'] = isset($match[1]) ? $match[1] : $ret['charset'];
+
+        preg_match('/comment=\'(.+?)\'/i', $tab_sql, $match);
+        $ret['table_name'] = isset($match[1]) ? $match[1] : $ret['table_name'];
+        
+        return $ret;
     }
 }
 
